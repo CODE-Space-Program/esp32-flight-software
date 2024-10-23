@@ -1,6 +1,8 @@
 #pragma once
 
 /* include all the needed libraries */
+#include <MPU6050_light.h>
+#include <Adafruit_BMP3XX.h>
 #include <Wire.h>
 #include <cppQueue.h>
 
@@ -50,11 +52,32 @@ struct Data {
 
 
 /* Initialize sensor objects here */
+MPU6050 mpu6050(Wire);
+Adafruit_BMP3XX bmp;
 
 
 void setup_sensors() {
 
-    /* code */
+    /* Initialize I2C Commnication */
+    Wire.begin(29, 28); // SDA and SCL pins on the ESP32 board
+
+    /* Initialize BMP390 */
+    if (!bmp.begin_I2C()) {
+        Serial.println("Could not find a valid BMP390 sensor, check wiring!");
+        while(1);
+    }
+
+    // Recommended initialization by the manufacturer
+    bmp.setTemperatureOversampling(BMP3_OVERSAMPLING_8X);
+    bmp.setPressureOversampling(BMP3_OVERSAMPLING_4X);
+    bmp.setIIRFilterCoeff(BMP3_IRR_FILTER_COEFF_3);
+    bmp.setOutputDataRate(BMP3_ODR_50_HZ);
+
+    /* Initialize MPU6050 */
+    mpu6050.begin(1, 3);
+    mpu6050.setAccOffsets(0.05, -0.15, -0.15);
+    mpu6050.setGyroOffsets(-0.93, -1.26, 0.25);
+    
 }
 
 /* Calculate the height based on temperature and pressure */
@@ -97,5 +120,5 @@ void print_data() {
 void update_sensors() {
 
     /* code here */
-    
+
 }

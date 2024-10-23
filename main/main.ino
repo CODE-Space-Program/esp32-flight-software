@@ -1,4 +1,5 @@
 /* HEADERS */
+#include "sensors.h"
 
 
 /* DATA STRUCTURES */
@@ -21,6 +22,8 @@ enum class State {
     Here we can initialize all the sensors 
 
 */
+
+
 
 void setup() {
 
