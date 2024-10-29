@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Servo.h>
+#include <ESP32Servo.h>
 
 // Create servo objects
 Servo servoPitch;
@@ -13,7 +13,7 @@ float integralPitch = 0, integralYaw = 0;
 // function to initialize the servos with the pins
 void initializeTVC() {
 
-    servoPitch.attach(0); // change 0 with the pin number for the pitch servo
+    servoPitch.attach(16); // change 0 with the pin number for the pitch servo
     servoYaw.attach(0); // change 0 with the pin number for the yaw servo 
 }
 
