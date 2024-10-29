@@ -25,9 +25,6 @@ enum class State {
     Here we can initialize all the sensors 
 
 */
-
-
-
 void setup() {
     Serial.begin(9600);
 
@@ -37,6 +34,7 @@ void setup() {
 
     // initial state
     STATE = State::Boot;
+    Serial.println("Setup completed!");
 }
 
 
@@ -45,7 +43,6 @@ void setup() {
     This funtion will run for the whole duration of the flight
 
 */
-
 void loop() {
 
     unsigned long currentTime = millis();

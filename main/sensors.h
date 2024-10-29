@@ -147,9 +147,9 @@ void update_sensors() {
     }
 
     // Print raw accelerometer readings
-    Serial.print("Raw acceleration X: "); Serial.println(a.acceleration.x);
-    Serial.print("Raw acceleration Y: "); Serial.println(a.acceleration.y);
-    Serial.print("Raw acceleration Z: "); Serial.println(a.acceleration.z);
+    //Serial.print("Raw acceleration X: "); Serial.println(a.acceleration.x);
+    //Serial.print("Raw acceleration Y: "); Serial.println(a.acceleration.y);
+    //Serial.print("Raw acceleration Z: "); Serial.println(a.acceleration.z);
 
     estimated_pitch = g.gyro.y * 180 / PI;
     estimated_yaw = g.gyro.z * 180 / PI;
@@ -167,8 +167,8 @@ void update_sensors() {
     float estimated_height = kalman_filter.get_estimated_height();
     float estimated_velocity = kalman_filter.get_estimated_velocity();
 
-    Serial.print("Estimated height: ");
-    Serial.print(estimated_height);
-    Serial.print("Estimated velocity: ");
-    Serial.println(estimated_velocity);
+    //Serial.print("Estimated height: ");
+    //Serial.print(estimated_height);
+    //Serial.print("Estimated velocity: ");
+    //Serial.println(estimated_velocity);
 }

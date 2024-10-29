@@ -31,7 +31,7 @@ struct KalmanFilter {
 
         // Process noise covariance (we have to adjust these values based on experimenting)
         Q[0][0] = 0.001; Q[0][1] = 0;
-        Q[1][0] = 0;     Q[1][1] = 0.003;
+        Q[1][0] = 0;     Q[1][1] = 0.0005;
 
         // Measurement noise covariance (adjust these based on sensor noise)
         R[0][0] = 0.02; // this is the recommended value from the manufacturer, we might have to increase it to .04 or .05 because of the rapid change in altitude and vibrations during the flight

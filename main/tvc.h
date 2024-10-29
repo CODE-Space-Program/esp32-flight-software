@@ -14,7 +14,7 @@ float integralPitch = 0, integralYaw = 0;
 void initializeTVC() {
 
     servoPitch.attach(16); // change 0 with the pin number for the pitch servo
-    servoYaw.attach(0); // change 0 with the pin number for the yaw servo 
+    servoYaw.attach(17); // change 0 with the pin number for the yaw servo 
 }
 
 // function to control the TVC
