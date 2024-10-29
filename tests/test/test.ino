@@ -13,8 +13,8 @@ Servo servoPitch;
 Servo servoYaw;
 
 // Servo control pins
-const int servoPitchPin = 18;
-const int servoYawPin = 19;
+const int servoPitchPin = 16;
+const int servoYawPin = 17;
 
 // PID control parameters for TVC
 float Kp = 1.0, Ki = 0.0, Kd = 0.0;
@@ -22,7 +22,7 @@ float prevErrorPitch = 0, prevErrorYaw = 0;
 float integralPitch = 0, integralYaw = 0;
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(9600);
   Wire.begin();
 
   // Initialize the MPU6050
