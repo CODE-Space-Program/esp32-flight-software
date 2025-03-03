@@ -1,9 +1,15 @@
 /* HEADERS */
 #include "sensors.h"
-#include "KalmanFilter.h"
+#include "SimpleKalmanFilter.h"
 #include <ESP32Servo.h>
 #include "tvc.h"
+#include <WiFi.h>
 
+const char* ssid = "CODE";
+const char* password = "Code!University";
+
+float estimated_height = 0;
+float estimated_velocity = 0;
 
 /* DATA STRUCTURES */
 // `State` represents all states of the flight and has an additional "Boot" and "Error" state
@@ -27,6 +33,14 @@ enum class State {
 */
 void setup() {
     Serial.begin(9600);
+    
+    // Connect to wifi
+    WiFi.begin(ssid, password);
+    while (WiFi.status() != WL_CONNECTED) {
+      delay(1000);
+      Serial.println("Connecting to WiFi...");
+    }
+    Serial.println("Connected to WiFi");
 
     // initialize all sensors and the kalman filter
     setup_sensors();
@@ -55,7 +69,6 @@ void loop() {
 
     float pitch = estimated_pitch;
     float yaw = estimated_yaw;
-
     // switch case function for all the flight case scenarios
 
     switch (STATE)  {
@@ -67,7 +80,7 @@ void loop() {
     
         case State::Ready:
             // check for launch condition e.g. significant height increase
-            if (kalman_filter.get_estimated_height() > 5.0) { // threshold for launch detection
+            if (estimated_height > 3.0) { // threshold for launch detection
                 STATE = State::Flight;
                 Serial.println("Liftoff detected! Entering `Flight` state. ");
             }
@@ -78,7 +91,7 @@ void loop() {
             controlTVC(pitch, yaw);
 
             // check if rocket is descending to deploy chute
-            if (kalman_filter.get_estimated_velocity() < -5.0) { // threshold descent velocity
+            if (estimated_velocity < -5.0) { // threshold descent velocity
                 STATE = State::Chute;
                 Serial.println("Descent detected! Deploying chute. Entering `Chute` state.");
             }
@@ -86,7 +99,7 @@ void loop() {
     
         case State::Chute:
             // logic for deploying the chute 
-            if (kalman_filter.get_estimated_height() < 1.0) {
+            if (estimated_height < 1.0) {
                 STATE = State::Land;
                 Serial.println("Landed! Entering `Land` state.");
             }

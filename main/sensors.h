@@ -4,8 +4,15 @@
 #include <Adafruit_BMP3XX.h>
 #include <Wire.h>
 #include <cppQueue.h>
-#include "KalmanFilter.h"
+#include <SimpleKalmanFilter.h>
 #include <Adafruit_MPU6050.h>
+#include <WiFiClient.h>
+
+// Server connection variables
+const char* serverIP = "192.168.14.3"; // replace with server ip
+uint16_t serverPort = 8080;
+
+WiFiClient client;
 
 // Global variables
 static float in = 0;
@@ -18,9 +25,13 @@ cppQueue q(sizeof(in), size_queue, FIFO); // instantiate queue
 extern float estimated_pitch;
 extern float estimated_yaw;
 
+extern float estimated_height;
+extern float estimated_velocity;
+
 // constants
-const float SEA_LEVEL_PRESSURE = 1023.6; // example for sea level pressure in Berlin
-const float AMBIENT_TEMPERATURE = 5; // To be changed on the day
+extern const float SEA_LEVEL_PRESSURE = 1000.17; // example for sea level pressure in Berlin
+extern const float AMBIENT_TEMPERATURE = 15; // To be changed on the day
+const float G = 9.81; // gravity constant
 const unsigned long updateInterval = 100; // Sensor update interval (ms)
 unsigned long lastUpdateTime = 0;
 
@@ -59,8 +70,11 @@ struct Data {
 /* Initialize sensor objects here */
 Adafruit_MPU6050 mpu6050;
 Adafruit_BMP3XX bmp;
+
 /* Initialize kalman filter */
-KalmanFilter kalman_filter;
+// SimpleKalmanFilter for height and velocity
+SimpleKalmanFilter heightKalmanFilter(0.03, 1.0, 0.01); // tuning values: (e_mea, e_est, q)
+SimpleKalmanFilter velocityKalmanFilter(0.03, 1.0, 0.01);
 
 
 void setup_sensors() {
@@ -73,10 +87,14 @@ void setup_sensors() {
     }
 
     /* Initialize BMP390 */
-    if (!bmp.begin_I2C()) {
+    if (!bmp.begin_I2C(0x77)) {
         Serial.println("Could not find a valid BMP390 sensor, check wiring!");
         while(1);
+    } else {
+      Serial.println("BMP390 Initialized successfully!");
     }
+
+    delay(100);
 
     // Recommended initialization by the manufacturer
     bmp.setTemperatureOversampling(BMP3_OVERSAMPLING_8X);
@@ -88,42 +106,8 @@ void setup_sensors() {
     mpu6050.setAccelerometerRange(MPU6050_RANGE_8_G);
     mpu6050.setGyroRange(MPU6050_RANGE_500_DEG);
     mpu6050.setFilterBandwidth(MPU6050_BAND_44_HZ);
-
-    float initial_height = bmp.readAltitude(SEA_LEVEL_PRESSURE); // adjust these based on the sea level
-    float initial_velocity = 0.0;
-    kalman_filter.init(initial_height, initial_velocity, 0.01); // dt = 0.01 (10ms)
     
 }
-
-/* Calculate the height based on temperature and pressure */
-/* float calc_height(float temp, float pressure) {
-
-    float calculatedHeight = ((pow((SEA_LEVEL_PRESSURE / pressure), (1 / 5.257)) - 1) * (AMBIENT_TEMPERATURE + 273.15)) / 0.0065;
-
-    if (isnan(heightOffset)) {
-        heightOffset = calculatedHeight;
-    }
-
-    return calculatedHeight - heightOffset;
-} */
-
-// calculate moving average for altitude
-/* float height_average(float in) {
-
-    float out;
-    q.push(&in);
-    if (q.getCount() < size_queue) {
-        sum += in;
-    }
-    if (q.getCount() == size_queue) {
-        sum += in;
-        q.pop(&out);
-        sum -= out;
-        return sum / size_queue;
-    } else {
-        return 0;
-    }
-} */
 
 /* Print data from the Data struct to the SD card */
 void print_data() {
@@ -151,24 +135,41 @@ void update_sensors() {
     //Serial.print("Raw acceleration Y: "); Serial.println(a.acceleration.y);
     //Serial.print("Raw acceleration Z: "); Serial.println(a.acceleration.z);
 
-    estimated_pitch = g.gyro.y * 180 / PI;
+    estimated_pitch = g.gyro.x * 180 / PI;
     estimated_yaw = g.gyro.z * 180 / PI;
-    float accZ = (a.acceleration.z - 9.81);
 
-    if (abs(accZ) < 0.5) {
-      accZ = 0;
+    float raw_height = bmp.readAltitude(SEA_LEVEL_PRESSURE);
+    float raw_velocity = a.acceleration.z;
+
+    float estimated_height = (heightKalmanFilter.updateEstimate(raw_height) - 33); // code 1st floor height for testing
+    float estimated_velocity = velocityKalmanFilter.updateEstimate(raw_velocity);
+    
+    Serial.print("Estimated height: ");
+    Serial.print(estimated_height);
+    Serial.print("Estimated velocity: ");
+    Serial.println(estimated_velocity);
+
+    // Send data to server
+    if (client.connect(serverIP, serverPort)) {
+       String postData = "Height=" + String(estimated_height) + "&Velocity=" + String(estimated_velocity);
+       client.println("POST /data HTTP/1.1");
+       client.println("Host: " + String(serverIP));
+       client.println("Content-Type: application/x-www-form-urlencoded");
+       client.println("Content-Length: " + String(postData.length()));
+       client.println();
+       client.print(postData);
+       client.stop();
+
+        // Read response (optional)
+        while (client.connected()) {
+            String line = client.readStringUntil('\n');
+            if (line == "\r") {
+                break;
+            }
+        }
+        client.stop();
+    } else {
+        Serial.println("Connection to server failed");
     }
-
-    kalman_filter.predict(accZ);
-
-    float measured_height = bmp.readAltitude(SEA_LEVEL_PRESSURE);
-    kalman_filter.update(measured_height);
-
-    float estimated_height = kalman_filter.get_estimated_height();
-    float estimated_velocity = kalman_filter.get_estimated_velocity();
-
-    //Serial.print("Estimated height: ");
-    //Serial.print(estimated_height);
-    //Serial.print("Estimated velocity: ");
-    //Serial.println(estimated_velocity);
 }
+
