@@ -1,2 +1,3 @@
-# CODE Space Program
-## our main file is main.ino
+# CODE Space Program - ESP32 Flight Software
+
+run `$ sh compile.sh` to compile
