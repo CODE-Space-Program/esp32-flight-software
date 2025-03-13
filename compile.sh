@@ -7,5 +7,6 @@ bin/arduino-cli lib install "simpleKalmanFilter"
 bin/arduino-cli lib install "Adafruit MPU6050"
 bin/arduino-cli lib install "ESP32Servo"
 bin/arduino-cli lib install "Adafruit PWM Servo Driver Library"
+bin/arduino-cli lib install "ArduinoJson"
 
 bin/arduino-cli compile --fqbn esp32:esp32:esp32 main
