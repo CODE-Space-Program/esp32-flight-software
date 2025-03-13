@@ -44,6 +44,7 @@ public:
         doc["velocity"] = data.velocity;
         doc["temperature"] = data.temperature;
         doc["status"] = data.status;
+        doc["sent"] = millis();
 
         String jsonPayload;
         serializeJson(doc, jsonPayload);
