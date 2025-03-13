@@ -21,9 +21,9 @@ jobs:
 
       - name: Set up Arduino CLI
         run: |
-          arduino-cli core update-index
-          arduino-cli core install esp32:esp32  # Install ESP32 core
+          bin/arduino-cli core update-index
+          bin/arduino-cli core install esp32:esp32  # Install ESP32 core
 
       - name: Compile Sketch
         run: |
-          arduino-cli compile --fqbn esp32:esp32:esp32 main
+          bin/arduino-cli compile --fqbn esp32:esp32:esp32 main
