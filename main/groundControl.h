@@ -43,7 +43,7 @@ public:
     {
         fetchFlightId();
 
-        requestTimer.attach(100, makeRequest);
+        requestTimer.attach(1.0, std::bind(&GroundControl::makeRequest, this));
     }
 
     void sendTelemetry(const Data &data)
@@ -52,7 +52,6 @@ public:
         doc["altitude"] = data.altitude;
         doc["velocity"] = data.velocity;
         doc["temperature"] = data.temperature;
-        doc["status"] = data.status;
         doc["sent"] = millis();
 
         String jsonPayload;
@@ -95,7 +94,7 @@ private:
             {
                 flightId = doc["data"]["flightId"].as<String>();
                 Serial.println("Flight ID: " + flightId);
-                makeRequest(); // Start polling once flightId is obtained
+                makeRequest();
             }
             else
             {
