@@ -20,7 +20,7 @@
 class GroundControl
 {
 public:
-    using Listener = std::function<void(const String &)>
+    using Listener = std::function<void(const String &)>;
 
     GroundControl(const String &baseUrl) : baseUrl(baseUrl)
     {
