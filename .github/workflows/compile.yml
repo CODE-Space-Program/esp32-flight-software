@@ -1,0 +1,29 @@
+name: Compile Arduino Sketch for ESP32
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Arduino CLI
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+          echo "$HOME/bin" >> $GITHUB_PATH
+
+      - name: Set up Arduino CLI
+        run: |
+          arduino-cli core update-index
+          arduino-cli core install esp32:esp32  # Install ESP32 core
+
+      - name: Compile Sketch
+        run: |
+          arduino-cli compile --fqbn esp32:esp32:esp32 main
