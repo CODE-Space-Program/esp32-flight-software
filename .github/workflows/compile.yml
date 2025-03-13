@@ -27,7 +27,7 @@ jobs:
       - name: Install Required Libraries
         run: |
           bin/arduino-cli lib install "Adafruit BMP3XX Library"
-          bin/arduino-cli lib install "cppQueue"
+          bin/arduino-cli lib install "Queue"
           bin/arduino-cli lib install "simpleKalmanFilter"
           bin/arduino-cli lib install "Adafruit MPU6050"
           bin/arduino-cli lib install "ESP32Servo"
