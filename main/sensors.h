@@ -3,24 +3,22 @@
 /* include all the needed libraries */
 #include <Adafruit_BMP3XX.h>
 #include <Wire.h>
-#include <cppQueue.h>
 #include <SimpleKalmanFilter.h>
 #include <Adafruit_MPU6050.h>
-#include <WiFiClient.h>
+#include <WiFi.h>
+#include <Arduino.h>
+#include <vector>
+#include <functional>
+#include <groundControl.h>
 
-// Server connection variables
-const char* serverIP = "192.168.14.3"; // replace with server ip
-uint16_t serverPort = 8080;
 
-WiFiClient client;
+//#define IGNITION_PIN 5 // change this to the GPIO pin connected to the ESP32
 
-// Global variables
-static float in = 0;
-static float sum = 0;
-int size_queue = 25; // Adjustable queue size
-bool firstIteration = true;
-float heightOffset = NAN;
-cppQueue q(sizeof(in), size_queue, FIFO); // instantiate queue
+GroundControl groundControl("https://spaceprogram.bolls.dev");
+
+// Wifi connection variables
+const char* ssid = "CODE";
+const char* password = "Code!University";
 
 extern float estimated_pitch;
 extern float estimated_yaw;
@@ -28,9 +26,11 @@ extern float estimated_yaw;
 extern float estimated_height;
 extern float estimated_velocity;
 
+float estimated_height = 0;
+float estimated_velocity = 0;
 // constants
-extern const float SEA_LEVEL_PRESSURE = 1000.17; // example for sea level pressure in Berlin
-extern const float AMBIENT_TEMPERATURE = 15; // To be changed on the day
+extern const float SEA_LEVEL_PRESSURE = 998.88; // example for sea level pressure in Berlin
+extern const float AMBIENT_TEMPERATURE = 22.4; // To be changed on the day
 const float G = 9.81; // gravity constant
 const unsigned long updateInterval = 100; // Sensor update interval (ms)
 unsigned long lastUpdateTime = 0;
@@ -60,7 +60,7 @@ struct Data {
     float pressure;         // pressure in mbar
     float temperatureMS;    // Temperature in Celsius
     float height;           // Height in meters
-    float estimated_altitude_average;   // Filtered height
+    float estimated_altitude;   // Filtered height
 
     char const null_terminator = 0; // Null terminator to avoid overflow
 
@@ -84,15 +84,16 @@ void setup_sensors() {
     if (!mpu6050.begin()) {
       Serial.println("Could not find a valid MPU6050 sensor, check wiring");
       while(1);
-    }
+    } else {
+      Serial.println("MPU6050 Initialized successfully");
+    };
 
     /* Initialize BMP390 */
-    if (!bmp.begin_I2C(0x77)) {
+    while (!bmp.begin_I2C(0x76)) {
         Serial.println("Could not find a valid BMP390 sensor, check wiring!");
-        while(1);
-    } else {
-      Serial.println("BMP390 Initialized successfully!");
-    }
+        delay(1000);
+    };
+    Serial.println("BMP390 Initialized successfully"); 
 
     delay(100);
 
@@ -140,36 +141,89 @@ void update_sensors() {
 
     float raw_height = bmp.readAltitude(SEA_LEVEL_PRESSURE);
     float raw_velocity = a.acceleration.z;
+    /*Serial.println("raw height:");
+    Serial.println(raw_height);
+    Serial.println("raw velocity:");
+    Serial.println(raw_velocity);*/
 
-    float estimated_height = (heightKalmanFilter.updateEstimate(raw_height) - 33); // code 1st floor height for testing
+    float height = (heightKalmanFilter.updateEstimate(raw_height) - 44); // code 1st floor height for testing
     float estimated_velocity = velocityKalmanFilter.updateEstimate(raw_velocity);
+
+    datapoint.estimated_altitude = height;
     
     Serial.print("Estimated height: ");
-    Serial.print(estimated_height);
+    Serial.print(height);
     Serial.print("Estimated velocity: ");
     Serial.println(estimated_velocity);
+}
 
-    // Send data to server
-    if (client.connect(serverIP, serverPort)) {
-       String postData = "Height=" + String(estimated_height) + "&Velocity=" + String(estimated_velocity);
-       client.println("POST /data HTTP/1.1");
-       client.println("Host: " + String(serverIP));
-       client.println("Content-Type: application/x-www-form-urlencoded");
-       client.println("Content-Length: " + String(postData.length()));
-       client.println();
-       client.print(postData);
-       client.stop();
+void connectWifi() {
+    WiFi.mode(WIFI_STA);
+    // Connect to wifi
+    WiFi.begin(ssid, password);
+    while (WiFi.status() != WL_CONNECTED) {
+      delay(1000);
+      Serial.println("Connecting to WiFi...");
+    }
+    Serial.println("Connected to WiFi");
+}
 
-        // Read response (optional)
-        while (client.connected()) {
-            String line = client.readStringUntil('\n');
-            if (line == "\r") {
-                break;
-            }
-        }
-        client.stop();
+bool checkSensors() {
+    // performs reading on the bmp390
+    if (!bmp.performReading()) {
+        Serial.println("Could not read from the BMP390, sensor checking failed.");
+        return false;
+    }
+
+    // performs reading on the mpu6050
+    sensors_event_t a, g, temp;
+    mpu6050.getEvent(&a, &g, &temp);
+
+    if (isnan(a.acceleration.x) || isnan(g.gyro.x)) {
+        Serial.println("MPU6050 readings failed, sensor checking failed");
+        return false;
+    }
+
+    Serial.println("All sensors are nominal.");
+    return true;
+}
+
+bool allSystemsGo() {
+    if (checkSensors()) {
+        Serial.println("All systems are go");
+        return true;
     } else {
-        Serial.println("Connection to server failed");
+        Serial.println("Not go for launch, check for errors");
+        return false;
     }
 }
 
+void motorIgnite() {
+    //logic for igniting the motor here
+}
+
+bool connectToGroundControl() {
+    Serial.println("Setting up GroundControl...");
+    groundControl.connect();
+    Serial.println("Connected to GroundControl");
+    return true;
+}
+
+bool receiveCommand() {
+    Serial.println("Checking for commands...");
+    bool commandReceived = false;
+
+    groundControl.subscribe([&commandReceived](const String &command) {
+        Serial.println("Received command: " + command);
+        if (command == "start") {
+            commandReceived = true;
+        }
+    });
+
+    return commandReceived;
+}
+
+/*void pyroInit() {
+    pinMode(IGNITION_PIN, OUTPUT);
+    digitalWrite(IGNITION_PIN, LOW);
+}*/

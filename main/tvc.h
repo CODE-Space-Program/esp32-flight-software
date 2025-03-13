@@ -1,20 +1,29 @@
 #pragma once
 
-#include <ESP32Servo.h>
+#include <Wire.h>
+#include <Adafruit_PWMServoDriver.h>
 
 // Create servo objects
-Servo servoPitch;
-Servo servoYaw;
+Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 
-float Kp = 1.0, Ki = 0.0, Kd = 0.0;
+
+// Define servo channels
+#define SERVO_PITCH_CHANNEL 0
+#define SERVO_YAW_CHANNEL 1
+
+// Define min and max pulse length for servos
+#define SERVOMIN 150
+#define SERVOMAX 600 
+
+float Kp = 0.55, Ki = 0.65, Kd = 0.09;
 float prevErrorPitch = 0, prevErrorYaw = 0;
 float integralPitch = 0, integralYaw = 0;
 
 // function to initialize the servos with the pins
 void initializeTVC() {
 
-    servoPitch.attach(16); // change 0 with the pin number for the pitch servo
-    servoYaw.attach(17); // change 0 with the pin number for the yaw servo 
+    pwm.begin();
+    pwm.setPWMFreq(60);
 }
 
 // function to control the TVC
@@ -35,9 +44,9 @@ void controlTVC(float pitch, float yaw) {
     prevErrorYaw = errorYaw;
 
     // Control the servos
-    int pitchServoPos = constrain(90 + controlSignalPitch, 0, 180);
-    int yawServoPos = constrain(90 + controlSignalYaw, 0, 180);
-    servoPitch.write(pitchServoPos);
-    servoYaw.write(yawServoPos);
-}
+    int pitchPulseLength = map(constrain(90 + controlSignalPitch, 0 ,180), 0, 180, SERVOMIN, SERVOMAX);
+    int yawPulseLength = map(constrain(90 + controlSignalYaw, 0, 180), 0, 180, SERVOMIN, SERVOMAX);
 
+    pwm.setPWM(SERVO_PITCH_CHANNEL, 0, pitchPulseLength);
+    pwm.setPWM(SERVO_YAW_CHANNEL, 0, yawPulseLength);
+}

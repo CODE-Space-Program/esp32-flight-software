@@ -3,13 +3,7 @@
 #include "SimpleKalmanFilter.h"
 #include <ESP32Servo.h>
 #include "tvc.h"
-#include <WiFi.h>
 
-const char* ssid = "CODE";
-const char* password = "Code!University";
-
-float estimated_height = 0;
-float estimated_velocity = 0;
 
 /* DATA STRUCTURES */
 // `State` represents all states of the flight and has an additional "Boot" and "Error" state
@@ -17,9 +11,10 @@ enum class State {
 
     Boot,
     Ready,
+    PreLaunch,
     Flight,
-    Chute,
-    Land,
+    PoweredLanding,
+    Landed,
 
     Error,
 
@@ -33,18 +28,11 @@ enum class State {
 */
 void setup() {
     Serial.begin(9600);
-    
-    // Connect to wifi
-    WiFi.begin(ssid, password);
-    while (WiFi.status() != WL_CONNECTED) {
-      delay(1000);
-      Serial.println("Connecting to WiFi...");
-    }
-    Serial.println("Connected to WiFi");
-
-    // initialize all sensors and the kalman filter
+    // initialize all sensors
+    connectWifi();
     setup_sensors();
     initializeTVC();
+    connectToGroundControl();
 
     // initial state
     STATE = State::Boot;
@@ -75,37 +63,51 @@ void loop() {
 
         case State::Boot:
             STATE = State::Ready;
-            Serial.println("Ready for liftoff! Entering `Ready` state.");
+            Serial.println("Boot Completed! Entering `Ready` state.");
             break;
     
         case State::Ready:
-            // check for launch condition e.g. significant height increase
-            if (estimated_height > 3.0) { // threshold for launch detection
-                STATE = State::Flight;
-                Serial.println("Liftoff detected! Entering `Flight` state. ");
-            }
+            // check if all systems are go and we are ready to transition to `PreLaunch check`
+            if (allSystemsGo()) {
+                STATE = State::PreLaunch;
+                Serial.println("All systems are go, transitioning into `PreLaunch` state");
+            };
             break;
 
+        case State::PreLaunch:
+            // All systems are go at this point, waiting for manual confirmation
+            if (receiveCommand()) {
+                Serial.println("Manual Confirmation Received, We are go for launch, initiating countdown");
+                delay(10000); // countdown for 10 seconds
+
+                /* We should probably add some fall back here in case something goes wrong during the countdown to be able to abort */
+                motorIgnite();
+                if (datapoint.estimated_altitude > 1.0) {
+                    STATE = State::Flight;
+                };
+            }
+            break;
+    
         case State::Flight:
-            // upadate Kalman filter and control TVC
+            // flight mode, control the TVC
+            controlTVC(pitch, yaw);
+            Serial.println("Rocket in flight");
+
+            //check if the rocket is descending to enter the `PoweredLanding` state
+            if (datapoint.estimated_altitude < 1.0) {}
+            break;
+
+        case State::PoweredLanding:
             controlTVC(pitch, yaw);
 
-            // check if rocket is descending to deploy chute
-            if (estimated_velocity < -5.0) { // threshold descent velocity
-                STATE = State::Chute;
-                Serial.println("Descent detected! Deploying chute. Entering `Chute` state.");
-            }
+            // logic for the flight computer to calculate when to start the landing burn
+            if (datapoint.estimated_altitude < 1.0) {
+                STATE = State::Landed;
+            };
+
             break;
     
-        case State::Chute:
-            // logic for deploying the chute 
-            if (estimated_height < 1.0) {
-                STATE = State::Land;
-                Serial.println("Landed! Entering `Land` state.");
-            }
-            break;
-    
-        case State::Land:
+        case State::Landed:
             // final logging
             Serial.println("Flight complete. Rocket landed successfully. ");
             break;
