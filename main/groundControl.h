@@ -4,6 +4,7 @@
 #include <vector>
 #include <functional>
 #include <ArduinoJson.h>
+#include "sensors.h"
 
 /**
  * GroundControl class that connects to the Space Program API
@@ -34,6 +35,33 @@ public:
     void connect()
     {
         fetchFlightId();
+    }
+
+    void sendTelemetry(const Data &data)
+    {
+        StaticJsonDocument<256> doc;
+        doc["altitude"] = data.altitude;
+        doc["velocity"] = data.velocity;
+        doc["temperature"] = data.temperature;
+        doc["status"] = data.status;
+
+        String jsonPayload;
+        serializeJson(doc, jsonPayload);
+
+        HTTPClient http;
+        http.begin(baseUrl + "/api/flights/" + flightId + "/logs");
+        http.addHeader("Content-Type", "application/json");
+        int httpCode = http.POST(jsonPayload);
+
+        if (httpCode > 0)
+        {
+            Serial.println("Telemetry sent");
+        }
+        else
+        {
+            Serial.println("Failed to send telemetry");
+        }
+        http.end();
     }
 
 private:
