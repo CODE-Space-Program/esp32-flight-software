@@ -5,6 +5,7 @@
 #include <functional>
 #include <ArduinoJson.h>
 #include "sensors.h"
+#include <Ticker.h>
 
 /**
  * GroundControl class that connects to the Space Program API
@@ -35,6 +36,8 @@ public:
     void connect()
     {
         fetchFlightId();
+
+        requestTimer.attach(100, makeRequest);
     }
 
     void sendTelemetry(const Data &data)
@@ -100,10 +103,17 @@ private:
         http.end();
     }
 
+    unsigned long lastRequestTime = 0;
+    const unsigned long requestInterval = 0;
+
+    Ticker requestTimer;
+
     void makeRequest()
     {
-        if (flightId.isEmpty())
+        if (flightId.isEmpty() || millis() - lastRequestTime < requestInterval)
             return;
+
+        lastRequestTime = millis();
 
         HTTPClient http;
         http.begin(baseUrl + "/api/flights/" + flightId + "/events");
@@ -116,7 +126,6 @@ private:
         }
 
         http.end();
-        makeRequest(); // Immediately send next request
     }
 
     void processResponse(const String &payload)
