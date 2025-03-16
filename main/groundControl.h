@@ -1,9 +1,6 @@
 #pragma once
 
 #include <NetBIOS.h>
-
-#pragma once
-
 #include <Arduino.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
@@ -13,18 +10,6 @@
 #include "sensors.h"
 #include <Ticker.h>
 
-/**
- * GroundControl class that connects to the Space Program API
- *
- * Usage:
- * GroundControl groundControl("https://spaceprogram.bolls.dev");
- *
- * groundControl.subscribe([](const String &command) {
- *     Serial.println("Received command: " + command);
- * });
- *
- * groundControl.connect();
- */
 class GroundControl
 {
 public:
@@ -42,46 +27,31 @@ public:
     void connect()
     {
         fetchFlightId();
-
         requestTimer.attach(1.0, std::bind(&GroundControl::makeRequest, this));
     }
 
     void sendTelemetry(const Data &data)
     {
-        StaticJsonDocument<256> doc;
-        doc["altitude"] = data.estimated_altitude;
-        doc["velocity"] = data.velocity;
-        doc["temperature"] = data.temperature;
-        doc["gyro_x"] = data.gyro.x;
-        doc["gyro_y"] = data.gyro.y;
-        doc["gyro_z"] = data.gyro.z;
-        doc["pitch"] = data.estimated_pitch;
-        doc["yaw"] = data.estimated_yaw;
-        doc["sent"] = millis();
+        StaticJsonDocument<256> logEntry;
+        logEntry["altitude"] = data.estimated_altitude;
+        logEntry["velocity"] = data.velocity;
+        logEntry["temperature"] = data.temperature;
+        logEntry["gyro_x"] = data.gyro.x;
+        logEntry["gyro_y"] = data.gyro.y;
+        logEntry["gyro_z"] = data.gyro.z;
+        logEntry["pitch"] = data.estimated_pitch;
+        logEntry["yaw"] = data.estimated_yaw;
+        logEntry["sent"] = millis();
 
-        String jsonPayload;
-        serializeJson(doc, jsonPayload);
-
-        HTTPClient http;
-        http.begin(baseUrl + "/api/flights/" + flightId + "/logs");
-        http.addHeader("Content-Type", "application/json");
-        int httpCode = http.POST(jsonPayload);
-
-        if (httpCode > 0)
-        {
-            Serial.println("Telemetry sent");
-        }
-        else
-        {
-            Serial.println("Failed to send telemetry");
-        }
-        http.end();
+        telemetryBuffer.push_back(logEntry);
+        checkAndSendTelemetry();
     }
 
 private:
     String baseUrl;
     String flightId;
     std::vector<Listener> listeners;
+    std::vector<StaticJsonDocument<256>> telemetryBuffer;
 
     void fetchFlightId()
     {
@@ -115,7 +85,6 @@ private:
 
     unsigned long lastRequestTime = 0;
     const unsigned long requestInterval = 0;
-
     Ticker requestTimer;
 
     void makeRequest()
@@ -161,6 +130,44 @@ private:
         for (auto &listener : listeners)
         {
             listener(command);
+        }
+    }
+
+    void checkAndSendTelemetry()
+    {
+        if (telemetryBuffer.empty())
+            return;
+
+        unsigned long now = millis();
+        unsigned long oldestTimestamp = telemetryBuffer.front()["sent"].as<unsigned long>();
+
+        if (now - oldestTimestamp >= 1000)
+        {
+            StaticJsonDocument<512> doc;
+            JsonArray logs = doc.to<JsonArray>();
+            for (auto &entry : telemetryBuffer)
+            {
+                logs.add(entry);
+            }
+            telemetryBuffer.clear();
+
+            String jsonPayload;
+            serializeJson(doc, jsonPayload);
+
+            HTTPClient http;
+            http.begin(baseUrl + "/api/flights/" + flightId + "/logs");
+            http.addHeader("Content-Type", "application/json");
+            int httpCode = http.POST(jsonPayload);
+
+            if (httpCode > 0)
+            {
+                Serial.println("Telemetry sent");
+            }
+            else
+            {
+                Serial.println("Failed to send telemetry");
+            }
+            http.end();
         }
     }
 };
