@@ -49,9 +49,14 @@ public:
     void sendTelemetry(const Data &data)
     {
         StaticJsonDocument<256> doc;
-        doc["altitude"] = data.altitude;
+        doc["altitude"] = data.estimated_altitude;
         doc["velocity"] = data.velocity;
         doc["temperature"] = data.temperature;
+        doc["gyro_x"] = data.gyro.x;
+        doc["gyro_y"] = data.gyro.y;
+        doc["gyro_z"] = data.gyro.z;
+        doc["pitch"] = data.estimated_pitch;
+        doc["yaw"] = data.estimated_yaw;
         doc["sent"] = millis();
 
         String jsonPayload;

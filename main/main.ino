@@ -7,6 +7,8 @@
 
 /* DATA STRUCTURES */
 // `State` represents all states of the flight and has an additional "Boot" and "Error" state
+
+
 enum class State
 {
 
@@ -23,28 +25,6 @@ enum class State
 
 GroundControl groundControl("https://spaceprogram.bolls.dev");
 
-bool connectToGroundControl()
-{
-    Serial.println("Setting up GroundControl...");
-    groundControl.connect();
-    Serial.println("Connected to GroundControl");
-    return true;
-}
-
-bool receiveCommand()
-{
-    Serial.println("Checking for commands...");
-    bool commandReceived = false;
-
-    groundControl.subscribe([&commandReceived](const String &command)
-                            {
-        Serial.println("Received command: " + command);
-        if (command == "start") {
-            commandReceived = true;
-        } });
-
-    return commandReceived;
-}
 
 /* SETUP
 
@@ -52,6 +32,17 @@ bool receiveCommand()
     Here we can initialize all the sensors
 
 */
+bool commandReceived = false;
+
+void sendTelemetryTask(void *parameter) {
+    Serial.println("Telemetry is working on core...");
+    Serial.println(xPortGetCoreID());
+    while (true) {
+        groundControl.sendTelemetry(datapoint);
+    }
+}
+
+
 void setup()
 {
     Serial.begin(9600);
@@ -59,10 +50,30 @@ void setup()
     connectWifi();
     setup_sensors();
     initializeTVC();
-    connectToGroundControl();
+    pyroInit();
+
+    groundControl.connect(); // Connect first
+    groundControl.subscribe([](const String &command) { // Subscribe after connection
+        Serial.println("Received command: " + command);
+        if (command == "start") {
+            commandReceived = true;
+        }
+    });
+
+    xTaskCreatePinnedToCore(
+        sendTelemetryTask,   // Task function
+        "SendTelemetryTask", // Task name
+        4096,                // Stack size
+        NULL,                // Task parameters
+        1,                   // Task priority
+        NULL,                // Task handle
+        0                    // Core ID (0 = first core, 1 = second core)
+    );
 
     // initial state
     STATE = State::Boot;
+    Serial.println("Setup working on core...");
+    Serial.println(xPortGetCoreID());
     Serial.println("Setup completed!");
 }
 
@@ -97,7 +108,7 @@ void loop()
 
     case State::Ready:
         // check if all systems are go and we are ready to transition to `PreLaunch check`
-        if (allSystemsGo())
+        if (allSystemsCheck())
         {
             STATE = State::PreLaunch;
             Serial.println("All systems are go, transitioning into `PreLaunch` state");
@@ -106,14 +117,12 @@ void loop()
 
     case State::PreLaunch:
         // All systems are go at this point, waiting for manual confirmation
-        if (receiveCommand())
+        if (commandReceived)
         {
             Serial.println("Manual Confirmation Received, We are go for launch, initiating countdown");
-            delay(10000); // countdown for 10 seconds
-
-            /* We should probably add some fall back here in case something goes wrong during the countdown to be able to abort */
-            motorIgnite();
-            if (datapoint.estimated_altitude > 1.0)
+            controlTVC(pitch, yaw);
+            ascendingMotorIgnite();
+            if (datapoint.estimated_altitude > 0.3)
             {
                 STATE = State::Flight;
             };
@@ -126,8 +135,9 @@ void loop()
         Serial.println("Rocket in flight");
 
         // check if the rocket is descending to enter the `PoweredLanding` state
-        if (datapoint.estimated_altitude < 1.0)
-        {
+        if (datapoint.estimated_altitude > 200) {
+            STATE = State::PoweredLanding;
+            Serial.println("Rocket is descending, entering `PoweredLanding` state");
         }
         break;
 
@@ -135,7 +145,7 @@ void loop()
         controlTVC(pitch, yaw);
 
         // logic for the flight computer to calculate when to start the landing burn
-        if (datapoint.estimated_altitude < 1.0)
+        if (datapoint.estimated_altitude < 200)
         {
             STATE = State::Landed;
         };

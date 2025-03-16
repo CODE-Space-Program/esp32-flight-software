@@ -10,11 +10,13 @@
 #include <vector>
 #include <functional>
 
-// #define IGNITION_PIN 5 // change this to the GPIO pin connected to the ESP32
+#define ASCENDING_MOTOR_IGNITION_PIN 5 // change this to the GPIO pin connected to the ESP32
+#define DESCENDING_MOTOR_IGNITION_PIN 6 
+
 
 // Wifi connection variables
-const char *ssid = "CODE";
-const char *password = "Code!University";
+const char *ssid = "VIRUS";
+//const char *password = "Code!University";
 
 extern float estimated_pitch;
 extern float estimated_yaw;
@@ -25,7 +27,7 @@ extern float estimated_velocity;
 float estimated_height = 0;
 float estimated_velocity = 0;
 // constants
-extern const float SEA_LEVEL_PRESSURE = 998.88; // example for sea level pressure in Berlin
+extern const float SEA_LEVEL_PRESSURE = 1020.53; // example for sea level pressure in Berlin
 extern const float AMBIENT_TEMPERATURE = 22.4;  // To be changed on the day
 const float G = 9.81;                           // gravity constant
 const unsigned long updateInterval = 100;       // Sensor update interval (ms)
@@ -57,9 +59,11 @@ struct Data
 
     float pressure;    // pressure in mbar
     float temperature; // Temperature in Celsius
-    float altitude;
+    float raw_altitude;
     float estimated_altitude; // Filtered height
     float velocity;
+    float estimated_pitch;
+    float estimated_yaw;
 
     char const null_terminator = 0; // Null terminator to avoid overflow
 
@@ -98,7 +102,7 @@ void setup_sensors()
     };
     Serial.println("BMP390 Initialized successfully");
 
-    delay(100);
+    delay(1000);
 
     // Recommended initialization by the manufacturer
     bmp.setTemperatureOversampling(BMP3_OVERSAMPLING_8X);
@@ -129,13 +133,6 @@ void update_sensors()
     sensors_event_t a, g, temp;
     mpu6050.getEvent(&a, &g, &temp);
 
-    // BMP390 sensor reading
-    if (!bmp.performReading())
-    {
-        Serial.println("Failed to read from the BMP390 sensor!");
-        return;
-    }
-
     // Print raw accelerometer readings
     // Serial.print("Raw acceleration X: "); Serial.println(a.acceleration.x);
     // Serial.print("Raw acceleration Y: "); Serial.println(a.acceleration.y);
@@ -146,15 +143,24 @@ void update_sensors()
 
     float raw_height = bmp.readAltitude(SEA_LEVEL_PRESSURE);
     float raw_velocity = a.acceleration.z;
+    float raw_velocity_ms2 = raw_velocity * G; // convert to m/s2
     /*Serial.println("raw height:");
     Serial.println(raw_height);
     Serial.println("raw velocity:");
     Serial.println(raw_velocity);*/
 
-    float height = (heightKalmanFilter.updateEstimate(raw_height) - 44); // code 1st floor height for testing
-    float estimated_velocity = velocityKalmanFilter.updateEstimate(raw_velocity);
+    float height = (heightKalmanFilter.updateEstimate(raw_height) - 41.5); // code 1st floor height for testing
+    float estimated_velocity = velocityKalmanFilter.updateEstimate(raw_velocity_ms2);
 
+    datapoint.raw_altitude = raw_height;
     datapoint.estimated_altitude = height;
+    datapoint.velocity = estimated_velocity;
+    datapoint.gyro.x = g.gyro.x;
+    datapoint.gyro.y = g.gyro.y;
+    datapoint.gyro.z = g.gyro.z;
+    datapoint.estimated_pitch = estimated_pitch;
+    datapoint.estimated_yaw = estimated_yaw;
+
 
     Serial.print("Estimated height: ");
     Serial.print(height);
@@ -166,7 +172,7 @@ void connectWifi()
 {
     WiFi.mode(WIFI_STA);
     // Connect to wifi
-    WiFi.begin(ssid, password);
+    WiFi.begin(ssid);
     while (WiFi.status() != WL_CONNECTED)
     {
         delay(1000);
@@ -198,7 +204,7 @@ bool checkSensors()
     return true;
 }
 
-bool allSystemsGo()
+bool allSystemsCheck()
 {
     if (checkSensors())
     {
@@ -212,12 +218,27 @@ bool allSystemsGo()
     }
 }
 
-void motorIgnite()
+void ascendingMotorIgnite()
 {
-    // logic for igniting the motor here
+    digitalWrite(ASCENDING_MOTOR_IGNITION_PIN, HIGH);
+    delay(1000);
+    digitalWrite(ASCENDING_MOTOR_IGNITION_PIN, LOW);
+    Serial.println("Ascending Motor ignited");
 }
 
-/*void pyroInit() {
-    pinMode(IGNITION_PIN, OUTPUT);
-    digitalWrite(IGNITION_PIN, LOW);
-}*/
+void descendingMotorIgnite() {
+    digitalWrite(DESCENDING_MOTOR_IGNITION_PIN, HIGH);
+    delay(1000);
+    digitalWrite(DESCENDING_MOTOR_IGNITION_PIN, LOW);
+    Serial.println("Descending motor ignited");
+}
+
+
+void pyroInit() {
+    pinMode(ASCENDING_MOTOR_IGNITION_PIN, OUTPUT);
+    digitalWrite(ASCENDING_MOTOR_IGNITION_PIN, LOW);
+
+    //pinMode(DESCENDING_MOTOR_IGNITION_PIN, OUTPUT);
+    //digitalWrite(DESCENDING_MOTOR_IGNITION_PIN, LOW);
+    Serial.println("Pyro channels initialized");
+}
