@@ -138,17 +138,17 @@ private:
         if (telemetryBuffer.empty())
             return;
 
-        unsigned long now = millis();
         unsigned long oldestTimestamp = telemetryBuffer.front()["sent"].as<unsigned long>();
-
-        if (now - oldestTimestamp >= 1000)
+        if (millis() - oldestTimestamp >= 1000)
         {
-            StaticJsonDocument<512> doc;
+            DynamicJsonDocument doc(1024);
             JsonArray logs = doc.to<JsonArray>();
+
             for (auto &entry : telemetryBuffer)
             {
                 logs.add(entry);
             }
+
             telemetryBuffer.clear();
 
             String jsonPayload;
