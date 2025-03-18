@@ -123,6 +123,9 @@ void print_data()
     /* code here */
 }
 
+
+const float alpha = 0.98; // Complementary filter constant
+unsigned long lastTime = 0;
 float estimated_pitch = 0;
 float estimated_yaw = 0;
 
@@ -138,8 +141,15 @@ void update_sensors()
     // Serial.print("Raw acceleration Y: "); Serial.println(a.acceleration.y);
     // Serial.print("Raw acceleration Z: "); Serial.println(a.acceleration.z);
 
-    estimated_pitch = g.gyro.x * 180 / PI;
-    estimated_yaw = g.gyro.z * 180 / PI;
+    unsigned long currentTime = millis();
+    float dt = (currentTime - lastTime) / 1000.0; // converts to seconds
+    lastTime = currentTime;
+
+    float gyroPitchRate = g.gyro.x * 180 / PI; // convert to degrees per second
+    float gyroYawRate = g.gyro.z * 180 / PI;
+
+    estimated_pitch = alpha * (estimated_pitch + gyroPitchRate * dt) + (1 - alpha) * atan2(a.acceleration.y, a.acceleration.z) * 180 / PI;
+    estimated_yaw = alpha * (estimated_yaw + gyroYawRate * dt) + (1 - alpha) * atan2(a.acceleration.x, a.acceleration.z) * 180 / PI;
 
     float raw_height = bmp.readAltitude(SEA_LEVEL_PRESSURE);
     float raw_velocity = a.acceleration.z;
