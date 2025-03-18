@@ -50,6 +50,7 @@ public:
 private:
     String baseUrl;
     String flightId;
+    String token;
     std::vector<Listener> listeners;
     std::vector<StaticJsonDocument<256>> telemetryBuffer;
 
@@ -68,6 +69,7 @@ private:
             if (!error)
             {
                 flightId = doc["data"]["flightId"].as<String>();
+                token = doc["data"]["token"].as<String>();
                 Serial.println("Flight ID: " + flightId);
                 makeRequest();
             }
@@ -96,6 +98,7 @@ private:
 
         HTTPClient http;
         http.begin(baseUrl + "/api/flights/" + flightId + "/events");
+        http.addHeader("Authorization", "Bearer " + token);
         int httpCode = http.GET();
 
         if (httpCode > 0)
@@ -157,6 +160,7 @@ private:
             HTTPClient http;
             http.begin(baseUrl + "/api/flights/" + flightId + "/logs");
             http.addHeader("Content-Type", "application/json");
+            http.addHeader("Authorization", "Bearer " + token);
             int httpCode = http.POST(jsonPayload);
 
             if (httpCode > 0)
