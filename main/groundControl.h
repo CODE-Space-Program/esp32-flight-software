@@ -26,6 +26,7 @@ public:
 
     void connect()
     {
+        performApiHealthcheck();
         fetchFlightId();
         requestTimer.attach(1.0, std::bind(&GroundControl::makeRequest, this));
     }
@@ -138,6 +139,51 @@ private:
         {
             listener(command);
         }
+    }
+
+    void performApiHealthcheck()
+    {
+        if (WiFi.status() != WL_CONNECTED)
+        {
+            Serial.println("Error: WiFi not connected");
+            return;
+        }
+
+        Serial.println("WiFi is connected, checking API health...");
+
+        // Resolve the IP address
+        WiFiClient client;
+        IPAddress serverIP;
+        String host = baseUrl.substring(7); // Remove "http://" or "https://"
+        int slashIndex = host.indexOf("/");
+        if (slashIndex != -1)
+        {
+            host = host.substring(0, slashIndex); // Extract hostname only
+        }
+
+        if (!WiFi.hostByName(host.c_str(), serverIP))
+        {
+            Serial.println("Error: Failed to resolve host " + host);
+            return;
+        }
+
+        Serial.println("Resolved " + host + " to " + serverIP.toString());
+
+        HTTPClient http;
+        http.begin(baseUrl + "/api/health");
+        int httpCode = http.GET();
+
+        if (httpCode != 200)
+        {
+            Serial.println("Error: Failed to perform API healthcheck, HTTP " + String(httpCode));
+            Serial.println("Response: " + http.getString());
+        }
+        else
+        {
+            Serial.println("API healthcheck successful");
+        }
+
+        http.end();
     }
 
     void checkAndSendTelemetry()
