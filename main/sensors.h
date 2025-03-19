@@ -41,24 +41,6 @@ struct Data
 
     long time; // time in ms
 
-    /*struct Gyro
-    {
-
-        float x;
-        float y;
-        float z;
-
-    } gyro; // Gyroscope data
-
-    struct Acc
-    {
-
-        float x;
-        float y;
-        float z;
-
-    } acc; // Accelerometer data*/
-
     //float pressure;    // pressure in mbar
     //float temperature; // Temperature in Celsius
     float raw_altitude;
@@ -120,16 +102,6 @@ void setup_sensors()
     mpu6050.setSampleRateDivisor(0); // 1 Khz
 }
 
-/* Print data from the Data struct to the SD card */
-void print_data()
-{
-
-    /* code here */
-}
-
-
-const float alpha = 0.98; // Complementary filter constant
-unsigned long lastTime = 0;
 float estimated_pitch = 0;
 float estimated_yaw = 0;
 
@@ -176,23 +148,9 @@ void update_sensors()
     gx = gx * 0.96 + ax * 0.04;
     gz = gz * 0.96 + az * 0.04;
 
-    //unsigned long currentTime = millis();
-    //float dt = (currentTime - lastTime) / 1000.0; // converts to seconds
-    //lastTime = currentTime;
-
-    //float gyroPitchRate = g.gyro.x * 180 / PI; // convert to degrees per second
-    //float gyroYawRate = g.gyro.y * 180 / PI;
-
-    //estimated_pitch = alpha * (estimated_pitch + gyroPitchRate * dt) + (1 - alpha) * atan2(a.acceleration.y, a.acceleration.z) * 180 / PI;
-    //estimated_yaw = alpha * (estimated_yaw + gyroYawRate * dt) + (1 - alpha) * atan2(a.acceleration.x, a.acceleration.z) * 180 / PI;
-
     float raw_height = bmp.readAltitude(SEA_LEVEL_PRESSURE);
     float raw_velocity = a.acceleration.z;
     float raw_velocity_ms2 = raw_velocity * G; // convert to m/s2
-    /*Serial.println("raw height:");
-    Serial.println(raw_height);
-    Serial.println("raw velocity:");
-    Serial.println(raw_velocity);*/
 
     float height = (heightKalmanFilter.updateEstimate(raw_height)); // code 1st floor height for testing
     float estimated_velocity = velocityKalmanFilter.updateEstimate(raw_velocity_ms2);
@@ -200,9 +158,6 @@ void update_sensors()
     datapoint.raw_altitude = raw_height;
     datapoint.estimated_altitude = height;
     datapoint.velocity = estimated_velocity;
-    //datapoint.gyro.x = g.gyro.x;
-    //datapoint.gyro.y = g.gyro.y;
-    //datapoint.gyro.z = g.gyro.z;
     datapoint.estimated_pitch = gx;
     datapoint.estimated_yaw = gz;
 
@@ -219,6 +174,7 @@ void update_sensors()
     Serial.print("Estimated velocity: ");
     Serial.println(estimated_velocity);
 }
+
 
 void connectWifi()
 {
@@ -291,7 +247,7 @@ void pyroInit() {
     pinMode(ASCENDING_MOTOR_IGNITION_PIN, OUTPUT);
     digitalWrite(ASCENDING_MOTOR_IGNITION_PIN, LOW);
 
-    //pinMode(DESCENDING_MOTOR_IGNITION_PIN, OUTPUT);
+    //pinMode(DESCENDING_MOTOR_IGNITION_PIN, OUTPUT); // uncomment this before flight
     //digitalWrite(DESCENDING_MOTOR_IGNITION_PIN, LOW);
     Serial.println("Pyro channels initialized");
 }
@@ -314,5 +270,6 @@ void calibrateMpu6050() {
   }
   gyrXoffs = xSum / num;
   gyrYoffs = ySum / num;
-  gyrZoffs = zSum / num;   
+  gyrZoffs = zSum / num;
+  Serial.println("MPU6050 calibrated...");
 }

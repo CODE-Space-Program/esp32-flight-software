@@ -59,7 +59,7 @@ private:
     int fetchFlightId()
     {
         HTTPClient http;
-        http.setTimeout(5000);
+        http.setTimeout(3000);
         http.begin(baseUrl + "/api/flights");
         http.addHeader("Content-Type", "application/json");
 
