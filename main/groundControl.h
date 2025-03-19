@@ -164,14 +164,12 @@ private:
         if (!WiFi.hostByName(host.c_str(), serverIP))
         {
             Serial.println("Error: Failed to resolve host " + host);
-            return;
         }
         Serial.println("Resolved " + host + " to " + serverIP.toString());
 
         if (!WiFi.hostByName("api.ipify.org", ipifyIP))
         {
             Serial.println("Error: Failed to resolve host api.ipify.org");
-            return;
         }
         Serial.println("Resolved api.ipify.org to " + ipifyIp.toString());
 
