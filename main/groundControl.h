@@ -33,12 +33,13 @@ public:
     void sendTelemetry(const Data &data)
     {
         StaticJsonDocument<256> logEntry;
+        logEntry["raw_altitude"] = data.raw_altitude;
         logEntry["altitude"] = data.estimated_altitude;
         logEntry["velocity"] = data.velocity;
-        logEntry["temperature"] = data.temperature;
-        logEntry["gyro_x"] = data.gyro.x;
-        logEntry["gyro_y"] = data.gyro.y;
-        logEntry["gyro_z"] = data.gyro.z;
+        //logEntry["temperature"] = data.temperature;
+        //logEntry["gyro_x"] = data.gyro.x;
+        //logEntry["gyro_y"] = data.gyro.y;
+        //logEntry["gyro_z"] = data.gyro.z;
         logEntry["pitch"] = data.estimated_pitch;
         logEntry["yaw"] = data.estimated_yaw;
         logEntry["sent"] = millis();
