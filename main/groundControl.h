@@ -58,14 +58,19 @@ private:
     int fetchFlightId()
     {
         HTTPClient http;
+        http.setTimeout(5000);
         http.begin(baseUrl + "/api/flights");
         http.addHeader("Content-Type", "application/json");
+
+        unsigned long startTime = millis();
         int httpCode = http.POST("{}");
+        unsigned long endTime = millis();
 
         if (httpCode != 200)
         {
             http.end();
             Serial.println("Error: Failed to fetch flight ID, HTTP " + String(httpCode));
+            Serial.println("Request timed out or failed in " + String(endTime - startTime) + " ms");
             return 1;
         }
 
@@ -162,14 +167,19 @@ private:
             serializeJson(doc, jsonPayload);
 
             HTTPClient http;
+            http.setTimeout(5000);
             http.begin(baseUrl + "/api/flights/" + flightId + "/logs");
             http.addHeader("Content-Type", "application/json");
             http.addHeader("Authorization", "Bearer " + token);
+
+            unsigned long startTime = millis();
             int httpCode = http.POST(jsonPayload);
+            unsigned long endTime = millis();
 
             if (httpCode != 200)
             {
                 Serial.println("Error: Failed to send telemetry, HTTP " + String(httpCode));
+                Serial.println("Request timed out or failed in " + String(endTime - startTime) + " ms");
                 http.end();
                 return;
             }

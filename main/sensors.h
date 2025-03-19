@@ -17,7 +17,7 @@
 #define FREQ 120.0
 
 // Wifi connection variables
-const char *ssid = "VIRUS";
+const char *ssid = "CODE Guests";
 //const char *password = "Code!University";
 
 extern float estimated_pitch;
@@ -231,6 +231,7 @@ void connectWifi()
         Serial.println("Connecting to WiFi...");
     }
     Serial.println("Connected to WiFi");
+    Serial.println(WiFi.RSSI());
 }
 
 bool checkSensors()
