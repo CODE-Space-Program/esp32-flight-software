@@ -37,10 +37,10 @@ public:
         logEntry["raw_altitude"] = data.raw_altitude;
         logEntry["altitude"] = data.estimated_altitude;
         logEntry["velocity"] = data.velocity;
-        //logEntry["temperature"] = data.temperature;
-        //logEntry["gyro_x"] = data.gyro.x;
-        //logEntry["gyro_y"] = data.gyro.y;
-        //logEntry["gyro_z"] = data.gyro.z;
+        // logEntry["temperature"] = data.temperature;
+        // logEntry["gyro_x"] = data.gyro.x;
+        // logEntry["gyro_y"] = data.gyro.y;
+        // logEntry["gyro_z"] = data.gyro.z;
         logEntry["pitch"] = data.estimated_pitch;
         logEntry["yaw"] = data.estimated_yaw;
         logEntry["sent"] = millis();
@@ -156,23 +156,24 @@ private:
 
         Serial.println("WiFi is connected, checking API health...");
 
-        // Resolve the IP address
         WiFiClient client;
         IPAddress serverIP;
-        String host = baseUrl.substring(7); // Remove "http://" or "https://"
-        int slashIndex = host.indexOf("/");
-        if (slashIndex != -1)
-        {
-            host = host.substring(0, slashIndex); // Extract hostname only
-        }
+        IPAddress ipifyIP;
+        String host = "spaceprogram.bolls.dev";
 
         if (!WiFi.hostByName(host.c_str(), serverIP))
         {
             Serial.println("Error: Failed to resolve host " + host);
-            return;
         }
-
         Serial.println("Resolved " + host + " to " + serverIP.toString());
+
+        if (!WiFi.hostByName("api.ipify.org", ipifyIP))
+        {
+            Serial.println("Error: Failed to resolve host api.ipify.org");
+        }
+        Serial.println("Resolved api.ipify.org to " + ipifyIp.toString());
+
+        Serial.println("Pinging " + baseUrl + "/api/health");
 
         HTTPClient http;
         http.begin(baseUrl + "/api/health");
@@ -187,7 +188,22 @@ private:
         {
             Serial.println("API healthcheck successful");
         }
+        http.end();
 
+        Serial.println("Pinging https://api.ipify.org");
+
+        http.begin("https://api.ipify.org");
+        httpCode = http.GET();
+
+        if (httpCode != 200)
+        {
+            Serial.println("Error: Failed to ping ipify, HTTP " + String(httpCode));
+            Serial.println("Response: " + http.getString());
+        }
+        else
+        {
+            Serial.println("Public IP: " + http.getString());
+        }
         http.end();
     }
 
