@@ -54,7 +54,7 @@ private:
     std::vector<Listener> listeners;
     std::vector<StaticJsonDocument<256>> telemetryBuffer;
 
-    void fetchFlightId()
+    int fetchFlightId()
     {
         HTTPClient http;
         http.begin(baseUrl + "/api/flights");
@@ -64,7 +64,8 @@ private:
         if (httpCode != 200)
         {
             http.end();
-            throw std::runtime_error("Failed to fetch flight ID: HTTP " + String(httpCode));
+            Serial.println("Error: Failed to fetch flight ID, HTTP " + String(httpCode));
+            return 1;
         }
 
         String payload = http.getString();
@@ -74,12 +75,14 @@ private:
 
         if (error)
         {
-            throw std::runtime_error("Failed to parse flight ID JSON");
+            Serial.println("Error: Failed to parse flight ID JSON");
+            return 1;
         }
 
         flightId = doc["data"]["flightId"].as<String>();
         token = doc["data"]["token"].as<String>();
         Serial.println("Flight ID: " + flightId);
+        return 0;
     }
 
     unsigned long lastRequestTime = 0;

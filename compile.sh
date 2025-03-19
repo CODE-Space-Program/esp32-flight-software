@@ -9,4 +9,4 @@ bin/arduino-cli lib install "ESP32Servo"
 bin/arduino-cli lib install "Adafruit PWM Servo Driver Library"
 bin/arduino-cli lib install "ArduinoJson"
 
-bin/arduino-cli compile --fqbn esp32:esp32:esp32 main
+bin/arduino-cli compile --fqbn esp32:esp32:esp32 --output-dir build main
