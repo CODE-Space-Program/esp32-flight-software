@@ -55,35 +55,35 @@ private:
     std::vector<Listener> listeners;
     std::vector<StaticJsonDocument<256>> telemetryBuffer;
 
-    void fetchFlightId()
+    int fetchFlightId()
     {
         HTTPClient http;
         http.begin(baseUrl + "/api/flights");
         http.addHeader("Content-Type", "application/json");
         int httpCode = http.POST("{}");
 
-        if (httpCode > 0)
+        if (httpCode != 200)
         {
-            String payload = http.getString();
-            StaticJsonDocument<256> doc;
-            DeserializationError error = deserializeJson(doc, payload);
-            if (!error)
-            {
-                flightId = doc["data"]["flightId"].as<String>();
-                token = doc["data"]["token"].as<String>();
-                Serial.println("Flight ID: " + flightId);
-                makeRequest();
-            }
-            else
-            {
-                Serial.println("Failed to parse flight ID");
-            }
+            http.end();
+            Serial.println("Error: Failed to fetch flight ID, HTTP " + String(httpCode));
+            return 1;
         }
-        else
-        {
-            Serial.println("Failed to fetch flight ID");
-        }
+
+        String payload = http.getString();
+        StaticJsonDocument<256> doc;
+        DeserializationError error = deserializeJson(doc, payload);
         http.end();
+
+        if (error)
+        {
+            Serial.println("Error: Failed to parse flight ID JSON");
+            return 1;
+        }
+
+        flightId = doc["data"]["flightId"].as<String>();
+        token = doc["data"]["token"].as<String>();
+        Serial.println("Flight ID: " + flightId);
+        return 0;
     }
 
     unsigned long lastRequestTime = 0;
@@ -102,13 +102,16 @@ private:
         http.addHeader("Authorization", "Bearer " + token);
         int httpCode = http.GET();
 
-        if (httpCode > 0)
+        if (httpCode != 200)
         {
-            String payload = http.getString();
-            processResponse(payload);
+            Serial.println("Error: Failed to fetch events, HTTP " + String(httpCode));
+            http.end();
+            return;
         }
 
+        String payload = http.getString();
         http.end();
+        processResponse(payload);
     }
 
     void processResponse(const String &payload)
@@ -117,7 +120,7 @@ private:
         DeserializationError error = deserializeJson(doc, payload);
         if (error)
         {
-            Serial.println("Failed to parse JSON");
+            Serial.println("Error: Failed to parse events JSON");
             return;
         }
 
@@ -164,15 +167,26 @@ private:
             http.addHeader("Authorization", "Bearer " + token);
             int httpCode = http.POST(jsonPayload);
 
-            if (httpCode > 0)
+            if (httpCode != 200)
             {
-                Serial.println("Telemetry sent");
+                Serial.println("Error: Failed to send telemetry, HTTP " + String(httpCode));
+                http.end();
+                return;
+            }
+
+            String response = http.getString();
+            http.end();
+
+            StaticJsonDocument<256> responseDoc;
+            DeserializationError error = deserializeJson(responseDoc, response);
+            if (error || !responseDoc["data"]["ok"].as<bool>())
+            {
+                Serial.println("Error: Invalid response from telemetry endpoint");
             }
             else
             {
-                Serial.println("Failed to send telemetry");
+                Serial.println("Telemetry sent successfully");
             }
-            http.end();
         }
     }
 };
