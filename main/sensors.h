@@ -14,7 +14,7 @@
 #define DESCENDING_MOTOR_IGNITION_PIN 6 
 
 // sample freq in Hz
-#define FREQ 90.0
+#define FREQ 120.0
 
 // Wifi connection variables
 const char *ssid = "VIRUS";
@@ -84,6 +84,7 @@ void setup_sensors()
 {
 
     Wire.begin(21, 22);
+    Wire.setClock(400000);
     /* Initialize I2C Commnication */
     if (!mpu6050.begin())
     {
@@ -116,6 +117,7 @@ void setup_sensors()
     mpu6050.setAccelerometerRange(MPU6050_RANGE_8_G);
     mpu6050.setGyroRange(MPU6050_RANGE_500_DEG);
     mpu6050.setFilterBandwidth(MPU6050_BAND_44_HZ);
+    mpu6050.setSampleRateDivisor(0); // 1 Khz
 }
 
 /* Print data from the Data struct to the SD card */
@@ -163,6 +165,7 @@ void update_sensors()
     // angles based on accelerometer
     ay = atan2(accX, sqrt(pow(accY, 2) + pow(accZ, 2))) * 180 / M_PI;
     ax = atan2(accY, sqrt(pow(accX, 2) + pow(accZ, 2))) * 180 / M_PI;
+    az = atan2(accZ, sqrt(pow(accX, 2) + pow(accY, 2))) * 180 / M_PI;
 
     // angles based on the gyroscope
     gx = gx + gyrX / FREQ;
