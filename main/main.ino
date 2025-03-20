@@ -22,6 +22,10 @@ enum class State
 
 GroundControl groundControl("https://spaceprogram.bolls.dev");
 
+// Global declaration of PID controllers
+PIDController pitchPID(1.0, 0.1, 0.01, 0.0); // Example coefficients for pitch
+PIDController yawPID(1.0, 0.1, 0.01, 0.0); // Example coefficients for yaw
+
 /* SETUP
 
     This function only runs once when the flight computer is turned on;
@@ -48,10 +52,6 @@ void setup()
     initializeTVC();
     pyroInit();
     calibrateMpu6050();
-
-    // Instantiate PID Controllers
-    PIDController pitchPID(1.0, 0.1, 0.01, 0.0); // Example coefficients for pitch
-    PIDController yawPID(1.0, 0.1, 0.01, 0.0); // Example coefficients for yaw
 
     groundControl.connect(); // Connect first
     groundControl.subscribe([](const String &command) { // Subscribe after connection
