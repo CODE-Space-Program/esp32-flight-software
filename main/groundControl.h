@@ -26,7 +26,7 @@ public:
 
     void connect()
     {
-        performApiHealthcheck();
+
         fetchFlightId();
         requestTimer.attach(1.0, std::bind(&GroundControl::makeRequest, this));
     }
@@ -72,6 +72,10 @@ private:
             http.end();
             Serial.println("Error: Failed to fetch flight ID, HTTP " + String(httpCode));
             Serial.println("Request timed out or failed in " + String(endTime - startTime) + " ms");
+            if (httpCode < 0)
+            {
+                debugNetworkConnection();
+            }
             return 1;
         }
 
@@ -146,15 +150,17 @@ private:
         }
     }
 
-    void performApiHealthcheck()
+    void debugNetworkConnection()
     {
+
         if (WiFi.status() != WL_CONNECTED)
         {
             Serial.println("Error: WiFi not connected");
             return;
         }
+        Serial.println("Debugging network connection...");
 
-        Serial.println("WiFi is connected, checking API health...");
+        Serial.println("✓ WiFi is connected");
 
         WiFiClient client;
         IPAddress serverIP;
@@ -163,17 +169,15 @@ private:
 
         if (!WiFi.hostByName(host.c_str(), serverIP))
         {
-            Serial.println("Error: Failed to resolve host " + host);
+            Serial.println("× Failed to resolve ip of " + host);
         }
-        Serial.println("Resolved " + host + " to " + serverIP.toString());
+        Serial.println("✓ Resolved ip of " + host + " to " + serverIP.toString());
 
         if (!WiFi.hostByName("api.ipify.org", ipifyIP))
         {
-            Serial.println("Error: Failed to resolve host api.ipify.org");
+            Serial.println("× Failed to resolve ip of api.ipify.org");
         }
-        Serial.println("Resolved api.ipify.org to " + ipifyIp.toString());
-
-        Serial.println("Pinging " + baseUrl + "/api/health");
+        Serial.println("✓ Resolved ip of api.ipify.org to " + ipifyIP.toString());
 
         HTTPClient http;
         http.begin(baseUrl + "/api/health");
@@ -181,28 +185,24 @@ private:
 
         if (httpCode != 200)
         {
-            Serial.println("Error: Failed to perform API healthcheck, HTTP " + String(httpCode));
-            Serial.println("Response: " + http.getString());
+            Serial.println("× Failed to ping " + baseUrl + "/api/health, HTTP " + String(httpCode));
         }
         else
         {
-            Serial.println("API healthcheck successful");
+            Serial.println("✓ Successfully pinged /api/health");
         }
         http.end();
-
-        Serial.println("Pinging https://api.ipify.org");
 
         http.begin("https://api.ipify.org");
         httpCode = http.GET();
 
         if (httpCode != 200)
         {
-            Serial.println("Error: Failed to ping ipify, HTTP " + String(httpCode));
-            Serial.println("Response: " + http.getString());
+            Serial.println("× Failed to ping https://api.ipify.org, HTTP " + String(httpCode));
         }
         else
         {
-            Serial.println("Public IP: " + http.getString());
+            Serial.println("✓ Successfully pinged https://api.ipify.org");
         }
         http.end();
     }
