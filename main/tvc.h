@@ -15,6 +15,9 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 #define SERVOMIN 150
 #define SERVOMAX 600 
 
+#define ANGLE_LIMIT 5
+#define STEP_SIZE 1
+
 float Kp = 0.55, Ki = 0.65, Kd = 0.09;
 float prevErrorPitch = 0, prevErrorYaw = 0;
 float integralPitch = 0, integralYaw = 0;
@@ -51,3 +54,14 @@ void controlTVC(float pitch, float yaw) {
     pwm.setPWM(SERVO_YAW_CHANNEL, 0, yawPulseLength);
 }
 
+
+
+void moveServos(float pitch, float yaw) {
+    // Map pitch and yaw to pulse lengths
+    int pitchPulseLength = map(constrain(90 + pitch, 0, 180), 0, 180, SERVOMIN, SERVOMAX);
+    int yawPulseLength = map(constrain(90 + yaw, 0, 180), 0, 180, SERVOMIN, SERVOMAX);
+
+    // Set PWM for servos
+    pwm.setPWM(SERVO_PITCH_CHANNEL, 0, pitchPulseLength);
+    pwm.setPWM(SERVO_YAW_CHANNEL, 0, yawPulseLength);
+}

@@ -33,6 +33,8 @@ GroundControl groundControl("https://spaceprogram.bolls.dev");
 
 */
 bool commandReceived = false;
+bool test_tvc_command = false;
+
 
 void sendTelemetryTask(void *parameter) {
     Serial.println("Telemetry is working on core...");
@@ -42,7 +44,6 @@ void sendTelemetryTask(void *parameter) {
         vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
-
 
 void setup()
 {
@@ -59,6 +60,9 @@ void setup()
         Serial.println("Received command: " + command);
         if (command == "start") {
             commandReceived = true;
+        }
+        if (command == "test_tvc") {
+            test_tvc_command = true;
         }
     });
 

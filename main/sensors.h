@@ -17,7 +17,7 @@
 #define FREQ 120.0
 
 // Wifi connection variables
-const char *ssid = "CODE Guests";
+const char *ssid = "VIRUS";
 //const char *password = "Code!University";
 
 extern float estimated_pitch;
