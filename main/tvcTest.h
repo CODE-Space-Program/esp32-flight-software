@@ -3,8 +3,20 @@
 class TvcTest
 {
 public:
-    TvcTest(const double maxDegrees, const float stepSize)
+    TvcTest()
     {
+    }
+
+    bool isInProgress()
+    {
+        return millis() - startedMs < durationMs;
+    }
+
+    void start(const double maxDegrees, const float stepSize, const int duration = 5000)
+    {
+        startedMs = millis();
+        durationMs = duration;
+
         maxPitch = maxDegrees;
         minPitch = -maxDegrees;
 
@@ -68,6 +80,9 @@ public:
     }
 
 private:
+    int startedMs = 0;
+    int durationMs = 0;
+
     float lastYaw = 0;
     float lastPitch = 0;
 
@@ -76,8 +91,8 @@ private:
     float maxPitch = 5;
     float minPitch = -5;
 
-    float stepSizeYaw;
-    float stepSizePitch;
+    float stepSizeYaw = 0;
+    float stepSizePitch = 0;
 
     bool yawDirection = true;
     bool pitchDirection = true;

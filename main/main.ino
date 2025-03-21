@@ -5,6 +5,7 @@
 #include "tvc.h"
 #include "groundControl.h"
 #include "tvcTest.h"
+#include <ArduinoJson.h>
 
 /* DATA STRUCTURES */
 // `State` represents all states of the flight and has an additional "Boot" and "Error" state
@@ -32,16 +33,15 @@ GroundControl groundControl("https://spaceprogram.bolls.dev");
 
 */
 bool commandReceived = false;
-int test_tvc_command_started = 0;
 
-int TVC_TEST_DURATION = 5000;
+TvcTest tvcTest;
 
-TvcTest tvcTest = TvcTest(20.0, 10.0);
-
-void sendTelemetryTask(void *parameter) {
+void sendTelemetryTask(void *parameter)
+{
     Serial.println("Telemetry is working on core...");
     Serial.println(xPortGetCoreID());
-    while (true) {
+    while (true)
+    {
         groundControl.sendTelemetry(datapoint);
         vTaskDelay(pdMS_TO_TICKS(100));
     }
@@ -57,8 +57,8 @@ void setup()
     pyroInit();
     calibrateMpu6050();
 
-    groundControl.connect(); // Connect first
-    groundControl.subscribe([](const String &command) { // Subscribe after connection
+    groundControl.connect();                                                     // Connect first
+    groundControl.subscribe([](const String &command, const JsonVariant &args) { // Subscribe after connection
         Serial.println("Received command: " + command);
 
         if (command == "start")
@@ -71,7 +71,20 @@ void setup()
         {
             Serial.println("Starting TVC test");
 
-            test_tvc_command_started = millis();
+            if (args.isNull())
+            {
+                tvcTest.start(20.0, 10.0);
+            }
+            else
+            {
+                serializeJsonPretty(args, Serial);
+                Serial.println();
+
+                float maxDegrees = args["maxDegrees"] | 20.0;
+                float stepDegrees = args["stepDegrees"] | 10.0;
+
+                tvcTest.start(maxDegrees, stepDegrees);
+            }
         }
     });
 
@@ -99,7 +112,7 @@ void setup()
 */
 void loop()
 {
-    if (test_tvc_command_started > 0 && millis() - test_tvc_command_started < TVC_TEST_DURATION)
+    if (tvcTest.isInProgress())
     {
         float newPitch = tvcTest.getNewPitch();
         float newYaw = tvcTest.getNewYaw();
@@ -163,7 +176,8 @@ void loop()
         Serial.println("Rocket in flight");
 
         // check if the rocket is descending to enter the `PoweredLanding` state
-        if (datapoint.estimated_altitude > 200) {
+        if (datapoint.estimated_altitude > 200)
+        {
             STATE = State::PoweredLanding;
             Serial.println("Rocket is descending, entering `PoweredLanding` state");
         }
