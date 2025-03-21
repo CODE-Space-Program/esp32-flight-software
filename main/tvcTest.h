@@ -3,13 +3,16 @@
 class TvcTest
 {
 public:
-    TvcTest(const double maxDegrees) : maxDegrees(maxDegrees)
+    TvcTest(const double maxDegrees, const float stepSize)
     {
         maxPitch = maxDegrees;
         minPitch = -maxDegrees;
 
         maxYaw = maxDegrees;
         minYaw = -maxDegrees;
+
+        stepSizeYaw = stepSize;
+        stepSizePitch = stepSize;
     }
 
     float getNewPitch()
@@ -18,11 +21,11 @@ public:
 
         if (pitchDirection)
         {
-            newPitch = lastPitch + stepSize;
+            newPitch = lastPitch + stepSizePitch;
         }
         else
         {
-            newPitch = lastPitch - stepSize;
+            newPitch = lastPitch - stepSizePitch;
         }
 
         if (newPitch >= maxPitch)
@@ -37,17 +40,18 @@ public:
 
         return newPitch;
     }
+
     float getNewYaw()
     {
         float newYaw;
 
         if (yawDirection)
         {
-            newYaw = lastYaw + stepSize;
+            newYaw = lastYaw + stepSizeYaw;
         }
         else
         {
-            newYaw = lastYaw - stepSize;
+            newYaw = lastYaw - stepSizeYaw;
         }
 
         if (newYaw >= maxYaw)
@@ -64,8 +68,6 @@ public:
     }
 
 private:
-    float maxDegrees;
-
     float lastYaw = 0;
     float lastPitch = 0;
 
@@ -74,7 +76,8 @@ private:
     float maxPitch = 5;
     float minPitch = -5;
 
-    float stepSize = 90.0;
+    float stepSizeYaw;
+    float stepSizePitch;
 
     bool yawDirection = true;
     bool pitchDirection = true;

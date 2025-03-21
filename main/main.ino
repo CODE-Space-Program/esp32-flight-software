@@ -36,7 +36,7 @@ int test_tvc_command_started = 0;
 
 int TVC_TEST_DURATION = 5000;
 
-TvcTest tvcTest = TvcTest(90.0);
+TvcTest tvcTest = TvcTest(20.0, 10.0);
 
 void sendTelemetryTask(void *parameter) {
     Serial.println("Telemetry is working on core...");
