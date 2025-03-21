@@ -13,7 +13,7 @@
 class GroundControl
 {
 public:
-    using Listener = std::function<void(const String &)>;
+    using Listener = std::function<void(const String &command, const JsonVariant &args)>;
 
     GroundControl(const String &baseUrl) : baseUrl(baseUrl)
     {
@@ -138,19 +138,21 @@ private:
         for (JsonObject obj : data)
         {
             String command = obj["command"].as<String>();
-            emitEvent(command);
+            JsonVariant args = obj["args"];
+            emitEvent(command, args);
         }
     }
 
-    void emitEvent(const String &command)
+    void emitEvent(const String &command, const JsonVariant &args)
     {
         for (auto &listener : listeners)
         {
-            listener(command);
+            listener(command, args);
         }
     }
 
-    void debugNetworkConnection()
+    void
+    debugNetworkConnection()
     {
         if (WiFi.status() != WL_CONNECTED)
         {
