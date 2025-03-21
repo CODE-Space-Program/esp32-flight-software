@@ -4,10 +4,10 @@
 #include <ESP32Servo.h>
 #include "tvc.h"
 #include "groundControl.h"
+#include "tvcTest.h"
 
 /* DATA STRUCTURES */
 // `State` represents all states of the flight and has an additional "Boot" and "Error" state
-
 
 enum class State
 {
@@ -25,7 +25,6 @@ enum class State
 
 GroundControl groundControl("https://spaceprogram.bolls.dev");
 
-
 /* SETUP
 
     This function only runs once when the flight computer is turned on;
@@ -33,8 +32,11 @@ GroundControl groundControl("https://spaceprogram.bolls.dev");
 
 */
 bool commandReceived = false;
-bool test_tvc_command = false;
+int test_tvc_command_started = 0;
 
+int TVC_TEST_DURATION = 5000;
+
+TvcTest tvcTest = TvcTest();
 
 void sendTelemetryTask(void *parameter) {
     Serial.println("Telemetry is working on core...");
@@ -58,11 +60,18 @@ void setup()
     groundControl.connect(); // Connect first
     groundControl.subscribe([](const String &command) { // Subscribe after connection
         Serial.println("Received command: " + command);
-        if (command == "start") {
+
+        if (command == "start")
+        {
+            Serial.println("Received start command");
+
             commandReceived = true;
         }
-        if (command == "test_tvc") {
-            test_tvc_command = true;
+        if (command == "test_tvc")
+        {
+            Serial.println("Starting TVC test");
+
+            test_tvc_command_started = millis();
         }
     });
 
@@ -90,6 +99,17 @@ void setup()
 */
 void loop()
 {
+    if (test_tvc_command_started > 0 && millis() - test_tvc_command_started < TVC_TEST_DURATION)
+    {
+        float newPitch = tvcTest.getNewPitch();
+        float newYaw = tvcTest.getNewYaw();
+
+        Serial.println("[TVC Test]: New pitch: " + String(newPitch) + ", New yaw: " + String(newYaw));
+
+        moveServos(newPitch, newYaw);
+
+        return;
+    }
 
     unsigned long currentTime = millis();
 
