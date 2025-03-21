@@ -3,7 +3,14 @@
 class TvcTest
 {
 public:
-    TvcTest() {}
+    TvcTest(const double maxDegrees) : maxDegrees(maxDegrees)
+    {
+        maxPitch = maxDegrees;
+        minPitch = -maxDegrees;
+
+        maxYaw = maxDegrees;
+        minYaw = -maxDegrees;
+    }
 
     int getNewPitch()
     {
@@ -57,6 +64,8 @@ public:
     }
 
 private:
+    float maxDegrees;
+
     float lastYaw;
     float lastPitch;
 
