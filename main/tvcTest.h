@@ -12,7 +12,7 @@ public:
         minYaw = -maxDegrees;
     }
 
-    int getNewPitch()
+    float getNewPitch()
     {
         float newPitch;
 
@@ -37,7 +37,7 @@ public:
 
         return newPitch;
     }
-    int getNewYaw()
+    float getNewYaw()
     {
         float newYaw;
 
@@ -66,15 +66,15 @@ public:
 private:
     float maxDegrees;
 
-    float lastYaw;
-    float lastPitch;
+    float lastYaw = 0;
+    float lastPitch = 0;
 
     float maxYaw = 5;
     float minYaw = -5;
     float maxPitch = 5;
     float minPitch = -5;
 
-    float stepSize = 0.1;
+    float stepSize = 90.0;
 
     bool yawDirection = true;
     bool pitchDirection = true;
