@@ -29,7 +29,7 @@ extern float estimated_velocity;
 float estimated_height = 0;
 float estimated_velocity = 0;
 // constants
-extern const float SEA_LEVEL_PRESSURE = 1020.57; // example for sea level pressure in Berlin
+extern const float SEA_LEVEL_PRESSURE = 1020.5; // example for sea level pressure in Berlin
 extern const float AMBIENT_TEMPERATURE = 22.4;  // To be changed on the day
 const float G = 9.81;                           // gravity constant
 const unsigned long updateInterval = 100;       // Sensor update interval (ms)
@@ -136,12 +136,12 @@ void update_sensors()
 
     // angles based on accelerometer
     ay = atan2(accX, sqrt(pow(accY, 2) + pow(accZ, 2))) * 180 / M_PI;
-    ax = atan2(accY, sqrt(pow(accX, 2) + pow(accZ, 2))) * 180 / M_PI;
+    ax = atan2(accY, sqrt(pow(accY, 2) + pow(accZ, 2))) * 180 / M_PI;
     az = atan2(accZ, sqrt(pow(accX, 2) + pow(accY, 2))) * 180 / M_PI;
 
     // angles based on the gyroscope
     gx = gx + gyrX / FREQ;
-    gy = gy - gyrY / FREQ;
+    gy = gy + gyrY / FREQ;
     gz = gz + gyrZ / FREQ;
 
     // complementary filter

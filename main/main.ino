@@ -96,8 +96,8 @@ void loop()
         lastUpdateTime = currentTime;
     }
 
-    float pitch = estimated_pitch;
-    float yaw = estimated_yaw;
+    float pitch = gx;
+    float yaw = gz;
     // switch case function for all the flight case scenarios
 
     switch (STATE)
