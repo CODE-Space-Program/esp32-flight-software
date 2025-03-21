@@ -171,7 +171,7 @@ private:
         {
             Serial.println("Error: Failed to resolve host api.ipify.org");
         }
-        Serial.println("Resolved api.ipify.org to " + ipifyIp.toString());
+        Serial.println("Resolved api.ipify.org to " + ipifyIP.toString());
 
         Serial.println("Pinging " + baseUrl + "/api/health");
 
