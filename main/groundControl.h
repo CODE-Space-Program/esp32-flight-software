@@ -152,7 +152,6 @@ private:
 
     void debugNetworkConnection()
     {
-
         if (WiFi.status() != WL_CONNECTED)
         {
             Serial.println("Error: WiFi not connected");
@@ -161,6 +160,8 @@ private:
         Serial.println("Debugging network connection...");
 
         Serial.println("✓ WiFi is connected");
+
+        Serial.setDebugOutput(true); // Enable WiFi debug output
 
         WiFiClient client;
         IPAddress serverIP;
@@ -171,40 +172,57 @@ private:
         {
             Serial.println("× Failed to resolve ip of " + host);
         }
-        Serial.println("✓ Resolved ip of " + host + " to " + serverIP.toString());
+        else
+        {
+            Serial.println("✓ Resolved ip of " + host + " to " + serverIP.toString());
+        }
 
         if (!WiFi.hostByName("api.ipify.org", ipifyIP))
         {
             Serial.println("× Failed to resolve ip of api.ipify.org");
         }
-        Serial.println("✓ Resolved ip of api.ipify.org to " + ipifyIP.toString());
+        else
+        {
+            Serial.println("✓ Resolved ip of api.ipify.org to " + ipifyIP.toString());
+        }
 
         HTTPClient http;
+
+        // Test 1: your own API
         http.begin(baseUrl + "/api/health");
         int httpCode = http.GET();
+        String payload = http.getString();
 
         if (httpCode != 200)
         {
             Serial.println("× Failed to ping " + baseUrl + "/api/health, HTTP " + String(httpCode));
+            Serial.println("Response: " + payload);
         }
         else
         {
             Serial.println("✓ Successfully pinged /api/health");
+            Serial.println("Response: " + payload);
         }
         http.end();
 
+        // Test 2: external API
         http.begin("https://api.ipify.org");
         httpCode = http.GET();
+        payload = http.getString();
 
         if (httpCode != 200)
         {
             Serial.println("× Failed to ping https://api.ipify.org, HTTP " + String(httpCode));
+            Serial.println("Response: " + payload);
         }
         else
         {
             Serial.println("✓ Successfully pinged https://api.ipify.org");
+            Serial.println("Response: " + payload);
         }
         http.end();
+
+        Serial.setDebugOutput(false); // Disable WiFi debug output
     }
 
     void checkAndSendTelemetry()
