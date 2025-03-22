@@ -59,7 +59,10 @@ void setup()
 
     groundControl.connect();                                                     // Connect first
     groundControl.subscribe([](const String &command, const JsonVariant &args) { // Subscribe after connection
-        Serial.println("Received command: " + command);
+        Serial.println("received command from ground control: " + command);
+
+        serializeJsonPretty(args, Serial);
+        Serial.println();
 
         if (command == "start")
         {
@@ -73,10 +76,14 @@ void setup()
 
             if (args.isNull())
             {
+                Serial.println("args are null");
+
                 tvcTest.start(20.0, 10.0);
             }
             else
             {
+                Serial.println("args are not null");
+
                 serializeJsonPretty(args, Serial);
                 Serial.println();
 

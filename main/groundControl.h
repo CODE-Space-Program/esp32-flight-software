@@ -139,6 +139,12 @@ private:
         {
             String command = obj["command"].as<String>();
             JsonVariant args = obj["args"];
+
+            Serial.println("processResponse command: " + command);
+
+            serializeJsonPretty(args, Serial);
+            Serial.println();
+
             emitEvent(command, args);
         }
     }
@@ -147,6 +153,11 @@ private:
     {
         for (auto &listener : listeners)
         {
+            Serial.println("emitEvent command: " + command);
+
+            serializeJsonPretty(args, Serial);
+            Serial.println();
+
             listener(command, args);
         }
     }
