@@ -93,6 +93,11 @@ void setup()
                 tvcTest.start(maxDegrees, stepDegrees);
             }
         }
+        if (command == "zero_tvc")
+        {
+            Serial.println("Zeroing TVC");
+            moveServos(0, 0);
+        }
     });
 
     xTaskCreatePinnedToCore(
