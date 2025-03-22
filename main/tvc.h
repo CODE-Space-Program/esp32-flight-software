@@ -1,16 +1,43 @@
 #pragma once
 
-#include <Adafruit_PWMServoDriver.h>
+#include "servos.h"
 
-#define SERVO_PITCH_CHANNEL 0
-#define SERVO_YAW_CHANNEL 1
-#define SERVOMIN 150
-#define SERVOMAX 600
-#define ANGLE_LIMIT 5
-#define STEP_SIZE 1
+/**
+ * @brief Thrust Vector Control (TVC) class.
+ */
+class Tvc {
+public:
+    int pitchServoChannel;
+    int yawServoChannel;
+    float pitch;
+    float yaw;
 
-extern Adafruit_PWMServoDriver pwm;
+    Tvc(Servos servos, int pitchServoChannel, int yawServoChannel);
 
-void initializeTVC();
-void controlTVC(float pitch, float yaw);
-void moveServos(float pitch, float yaw);
+    void initialize();
+
+    /**
+     * @brief Move the TVC to the specified angles.
+     * @param pitch Angle in degrees [-90, 90].
+     * @param yaw Angle in degrees [-90, 90].
+     */
+    void moveRaw(float pitch, float yaw);
+
+    /**
+     * @brief Move the TVC using PID control to stabilize around 0°.
+     * @param pitch Current pitch angle.
+     * @param yaw Current yaw angle.
+     */
+    void move(float pitch, float yaw);
+
+private:
+    Servos servos;
+
+    // PID constants
+    float Kp = 0.55;
+    float Ki = 0.65;
+    float Kd = 0.09;
+
+    float prevErrorPitch = 0, prevErrorYaw = 0;
+    float integralPitch = 0, integralYaw = 0;
+};

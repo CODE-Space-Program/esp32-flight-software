@@ -1,4 +1,3 @@
-/* HEADERS */
 #include "sensors.h"
 #include "SimpleKalmanFilter.h"
 #include <ESP32Servo.h>
@@ -7,7 +6,6 @@
 #include "tvcTest.h"
 #include <ArduinoJson.h>
 
-/* DATA STRUCTURES */
 // `State` represents all states of the flight and has an additional "Boot" and "Error" state
 
 enum class State
@@ -38,14 +36,11 @@ const char *stateStrings[] = {
 
 GroundControl groundControl("https://spaceprogram.bolls.dev");
 
-/* SETUP
 
-    This function only runs once when the flight computer is turned on;
-    Here we can initialize all the sensors
-
-*/
 bool commandReceived = false;
 
+Servos servos(-65, 65);
+Tvc tvc(servos, 0, 1);
 TvcTest tvcTest;
 
 void sendTelemetryTask(void *parameter)
@@ -54,23 +49,32 @@ void sendTelemetryTask(void *parameter)
     Serial.println(xPortGetCoreID());
     while (true)
     {
+        datapoint.nominalYawServoDegrees = tvc.yaw;
+        datapoint.nominalPitchServoDegrees = tvc.pitch;
+    
         groundControl.sendTelemetry(datapoint);
         vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
 
+
+/* SETUP
+    This function only runs once when the flight computer is turned on;
+    Here we can initialize all the sensors
+*/
 void setup()
 {
     Serial.begin(9600);
-    // initialize all sensors
+
+    tvc.initialize();    
+    
     connectWifi();
     setup_sensors();
-    initializeTVC();
     pyroInit();
     calibrateMpu6050();
 
-    groundControl.connect();                                                     // Connect first
-    groundControl.subscribe([](const String &command, const JsonVariant &args) { // Subscribe after connection
+    groundControl.connect();
+    groundControl.subscribe([](const String &command, const JsonVariant &args) {
         Serial.println("received command from ground control: " + command);
 
         serializeJsonPretty(args, Serial);
@@ -108,10 +112,7 @@ void setup()
         if (command == "zero_tvc")
         {
             Serial.println("Zeroing TVC");
-            moveServos(0, 0);
-
-            datapoint.nominalPitchServoDegrees = 0;
-            datapoint.nominalYawServoDegrees = 0;
+            tvc.moveRaw(0, 0);
         }
     });
 
@@ -125,7 +126,6 @@ void setup()
         0                    // Core ID (0 = first core, 1 = second core)
     );
 
-    // initial state
     STATE = State::Boot;
     Serial.println("Setup working on core...");
     Serial.println(xPortGetCoreID());
@@ -148,10 +148,7 @@ void loop()
 
         Serial.println("[TVC Test]: New pitch: " + String(newPitch) + ", New yaw: " + String(newYaw));
 
-        moveServos(newPitch, newYaw);
-
-        datapoint.nominalPitchServoDegrees = newPitch;
-        datapoint.nominalYawServoDegrees = newYaw;
+        tvc.moveRaw(newPitch, newYaw);
 
         return;
     }
@@ -167,7 +164,6 @@ void loop()
 
     float pitch = gx;
     float yaw = gz;
-    // switch case function for all the flight case scenarios
 
     switch (STATE)
     {
@@ -181,9 +177,7 @@ void loop()
         // check if all systems are go and we are ready to transition to `PreLaunch check`
         if (allSystemsCheck())
         {
-            controlTVC(pitch, yaw);
-            datapoint.nominalPitchServoDegrees = pitch;
-            datapoint.nominalYawServoDegrees = yaw;
+            tvc.move(pitch, yaw);
 
             STATE = State::PreLaunch;
             Serial.println("All systems are go, transitioning into `PreLaunch` state");
@@ -192,11 +186,11 @@ void loop()
 
     case State::PreLaunch:
         // All systems are go at this point, waiting for manual confirmation
-        controlTVC(pitch, yaw);
+        tvc.move(pitch, yaw);
         if (commandReceived)
         {
             Serial.println("Manual Confirmation Received, We are go for launch, initiating countdown");
-            controlTVC(pitch, yaw);
+            tvc.move(pitch, yaw);
             ascendingMotorIgnite();
             if (datapoint.estimated_altitude > 0.3)
             {
@@ -207,7 +201,7 @@ void loop()
 
     case State::Flight:
         // flight mode, control the TVC
-        controlTVC(pitch, yaw);
+        tvc.move(pitch, yaw);
         Serial.println("Rocket in flight");
 
         // check if the rocket is descending to enter the `PoweredLanding` state
@@ -219,7 +213,7 @@ void loop()
         break;
 
     case State::PoweredLanding:
-        controlTVC(pitch, yaw);
+        tvc.move(pitch, yaw);
 
         // logic for the flight computer to calculate when to start the landing burn
         if (datapoint.estimated_altitude < 200)
@@ -235,7 +229,6 @@ void loop()
         break;
 
     case State::Error:
-        // handle error
         break;
     }
 }
