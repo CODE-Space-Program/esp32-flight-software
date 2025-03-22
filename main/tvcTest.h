@@ -1,5 +1,7 @@
 #pragma once
 
+#include "tvc.h"
+
 class TvcTest
 {
 public:
@@ -77,6 +79,16 @@ public:
         lastYaw = newYaw;
 
         return newYaw;
+    }
+    void tick()
+    {
+        if (isInProgress())
+        {
+            float newPitch = getNewPitch();
+            float newYaw = getNewYaw();
+
+            moveServos(newPitch, newYaw);
+        }
     }
 
 private:
