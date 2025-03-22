@@ -11,14 +11,14 @@
 #include <functional>
 
 #define ASCENDING_MOTOR_IGNITION_PIN 5 // change this to the GPIO pin connected to the ESP32
-#define DESCENDING_MOTOR_IGNITION_PIN 6 
+#define DESCENDING_MOTOR_IGNITION_PIN 6
 
 // sample freq in Hz
 #define FREQ 120.0
 
 // Wifi connection variables
 const char *ssid = "VIRUS";
-//const char *password = "Code!University";
+// const char *password = "Code!University";
 
 extern float estimated_pitch;
 extern float estimated_yaw;
@@ -38,11 +38,12 @@ unsigned long lastUpdateTime = 0;
 // Data Structure for a single datapoint
 struct Data
 {
+    String state = "Ready";
 
     long time; // time in ms
 
-    //float pressure;    // pressure in mbar
-    //float temperature; // Temperature in Celsius
+    // float pressure;    // pressure in mbar
+    // float temperature; // Temperature in Celsius
     float raw_altitude;
     float estimated_altitude; // Filtered height
     float velocity;
@@ -50,6 +51,9 @@ struct Data
     float estimated_yaw;
 
     char const null_terminator = 0; // Null terminator to avoid overflow
+
+    float nominalYawServoDegrees = 0;
+    float nominalPitchServoDegrees = 0;
 
 } datapoint;
 
@@ -175,7 +179,6 @@ void update_sensors()
     Serial.println(estimated_velocity);
 }
 
-
 void connectWifi()
 {
     WiFi.mode(WIFI_STA);
@@ -235,41 +238,44 @@ void ascendingMotorIgnite()
     Serial.println("Ascending Motor ignited");
 }
 
-void descendingMotorIgnite() {
+void descendingMotorIgnite()
+{
     digitalWrite(DESCENDING_MOTOR_IGNITION_PIN, HIGH);
     delay(1000);
     digitalWrite(DESCENDING_MOTOR_IGNITION_PIN, LOW);
     Serial.println("Descending motor ignited");
 }
 
-
-void pyroInit() {
+void pyroInit()
+{
     pinMode(ASCENDING_MOTOR_IGNITION_PIN, OUTPUT);
     digitalWrite(ASCENDING_MOTOR_IGNITION_PIN, LOW);
 
-    //pinMode(DESCENDING_MOTOR_IGNITION_PIN, OUTPUT); // uncomment this before flight
-    //digitalWrite(DESCENDING_MOTOR_IGNITION_PIN, LOW);
+    // pinMode(DESCENDING_MOTOR_IGNITION_PIN, OUTPUT); // uncomment this before flight
+    // digitalWrite(DESCENDING_MOTOR_IGNITION_PIN, LOW);
     Serial.println("Pyro channels initialized");
 }
 
 double gyrXoffs = 0.0, gyrYoffs = 0.0, gyrZoffs = 0.0;
 
-void calibrateMpu6050() {
-// Calibration routine
-  int x;
-  long xSum = 0, ySum = 0, zSum = 0;
-  int num = 500;
+void calibrateMpu6050()
+{
+    // Calibration routine
+    int x;
+    long xSum = 0, ySum = 0, zSum = 0;
+    int num = 500;
 
-  for (x = 0; x < num; x++) {
-    sensors_event_t a, g, temp;
-    mpu6050.getEvent(&a, &g, &temp);
+    for (x = 0; x < num; x++)
+    {
+        sensors_event_t a, g, temp;
+        mpu6050.getEvent(&a, &g, &temp);
 
-    xSum += g.gyro.x;
-    ySum += g.gyro.y;
-    zSum += g.gyro.z;
-  }
-  gyrXoffs = xSum / num;
-  gyrYoffs = ySum / num;
-  gyrZoffs = zSum / num;
-  Serial.println("MPU6050 calibrated...");
+        xSum += g.gyro.x;
+        ySum += g.gyro.y;
+        zSum += g.gyro.z;
+    }
+    gyrXoffs = xSum / num;
+    gyrYoffs = ySum / num;
+    gyrZoffs = zSum / num;
+    Serial.println("MPU6050 calibrated...");
 }

@@ -24,6 +24,18 @@ enum class State
 
 } STATE;
 
+/**
+ * string representation of the state to be sent to the ground control
+ */
+const char *stateStrings[] = {
+    "Boot",
+    "Ready",
+    "PreLaunch",
+    "Flight",
+    "PoweredLanding",
+    "Landed",
+    "Error"};
+
 GroundControl groundControl("https://spaceprogram.bolls.dev");
 
 /* SETUP
@@ -97,6 +109,9 @@ void setup()
         {
             Serial.println("Zeroing TVC");
             moveServos(0, 0);
+
+            datapoint.nominalPitchServoDegrees = 0;
+            datapoint.nominalYawServoDegrees = 0;
         }
     });
 
@@ -124,6 +139,8 @@ void setup()
 */
 void loop()
 {
+    datapoint.state = stateStrings[static_cast<int>(STATE)];
+
     if (tvcTest.isInProgress())
     {
         float newPitch = tvcTest.getNewPitch();
@@ -132,6 +149,9 @@ void loop()
         Serial.println("[TVC Test]: New pitch: " + String(newPitch) + ", New yaw: " + String(newYaw));
 
         moveServos(newPitch, newYaw);
+
+        datapoint.nominalPitchServoDegrees = newPitch;
+        datapoint.nominalYawServoDegrees = newYaw;
 
         return;
     }
@@ -162,6 +182,9 @@ void loop()
         if (allSystemsCheck())
         {
             controlTVC(pitch, yaw);
+            datapoint.nominalPitchServoDegrees = pitch;
+            datapoint.nominalYawServoDegrees = yaw;
+
             STATE = State::PreLaunch;
             Serial.println("All systems are go, transitioning into `PreLaunch` state");
         };

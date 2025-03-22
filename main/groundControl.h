@@ -44,6 +44,9 @@ public:
         logEntry["pitch"] = data.estimated_pitch;
         logEntry["yaw"] = data.estimated_yaw;
         logEntry["sent"] = millis();
+        logEntry["state"] = data.state;
+        logEntry["nominalPitchServoDegrees"] = data.nominalPitchServoDegrees;
+        logEntry["nominalYawServoDegrees"] = data.nominalYawServoDegrees;
 
         telemetryBuffer.push_back(logEntry);
         checkAndSendTelemetry();
