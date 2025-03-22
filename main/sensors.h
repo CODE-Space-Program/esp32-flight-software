@@ -29,7 +29,7 @@ extern float estimated_velocity;
 float estimated_height = 0;
 float estimated_velocity = 0;
 // constants
-extern const float SEA_LEVEL_PRESSURE = 1020.5; // example for sea level pressure in Berlin
+extern const float SEA_LEVEL_PRESSURE = 766; // example for sea level pressure in Berlin
 extern const float AMBIENT_TEMPERATURE = 22.4;  // To be changed on the day
 const float G = 9.81;                           // gravity constant
 const unsigned long updateInterval = 100;       // Sensor update interval (ms)
@@ -43,7 +43,7 @@ struct Data
     long time; // time in ms
 
     // float pressure;    // pressure in mbar
-    // float temperature; // Temperature in Celsius
+    float temperature; // Temperature in Celsius
     float raw_altitude;
     float estimated_altitude; // Filtered height
     float velocity;
@@ -111,7 +111,7 @@ float estimated_yaw = 0;
 
 double gx = 0, gy = 0, gz = 0;
 double gyrX = 0, gyrY = 0, gyrZ = 0;
-int16_t accX = 0, accY = 0, accZ = 0;
+double accX = 0, accY = 0, accZ = 0;
 
 /* Update sensor readings and log data */
 void update_sensors()
@@ -130,17 +130,17 @@ void update_sensors()
     // Serial.print("Raw acceleration Y: "); Serial.println(a.acceleration.y);
     // Serial.print("Raw acceleration Z: "); Serial.println(a.acceleration.z);
 
-    accX = a.acceleration.x;
-    accY = a.acceleration.y;
-    accZ = a.acceleration.z;
+    accX = a.acceleration.x - 0.41;
+    accY = a.acceleration.y + 0.14; // calibration values based on inherent innacuracies in BPM sensor
+    accZ = a.acceleration.z + 0.72;
 
     gyrX = g.gyro.x;
     gyrY = g.gyro.y;
     gyrZ = g.gyro.z;
 
     // angles based on accelerometer
-    ay = atan2(accX, sqrt(pow(accY, 2) + pow(accZ, 2))) * 180 / M_PI;
-    ax = atan2(accY, sqrt(pow(accY, 2) + pow(accZ, 2))) * 180 / M_PI;
+    ax = atan2(-accX, sqrt(pow(accY, 2) + pow(accZ, 2))) * 180 / M_PI;
+    ay = atan2(accY, sqrt(pow(accX, 2) + pow(accZ, 2))) * 180 / M_PI;
     az = atan2(accZ, sqrt(pow(accX, 2) + pow(accY, 2))) * 180 / M_PI;
 
     // angles based on the gyroscope
@@ -149,11 +149,11 @@ void update_sensors()
     gz = gz + gyrZ / FREQ;
 
     // complementary filter
-    gx = gx * 0.96 + ax * 0.04;
-    gz = gz * 0.96 + az * 0.04;
+    gx = ax * 0.96 + gx * 0.04;
+    gz = az * 0.96 + gz * 0.04;
 
     float raw_height = bmp.readAltitude(SEA_LEVEL_PRESSURE);
-    float raw_velocity = a.acceleration.z;
+    float raw_velocity = a.acceleration.y;
     float raw_velocity_ms2 = raw_velocity * G; // convert to m/s2
 
     float height = (heightKalmanFilter.updateEstimate(raw_height)); // code 1st floor height for testing
@@ -162,16 +162,16 @@ void update_sensors()
     datapoint.raw_altitude = raw_height;
     datapoint.estimated_altitude = height;
     datapoint.velocity = estimated_velocity;
-    datapoint.estimated_pitch = gx;
-    datapoint.estimated_yaw = gz;
+    datapoint.estimated_yaw = gx;
+    datapoint.estimated_pitch = gz;
 
     end_time = millis();
 
     delay(((1 / FREQ) * 1000) - (end_time - start_time));
 
-    Serial.println("pitch angle:  ");
+    Serial.println("yaw angle:  ");
     Serial.println(gx);
-    Serial.println("yaw angle");
+    Serial.println("pitch angle");
     Serial.println(gz);
     Serial.print("Estimated height: ");
     Serial.print(height);
