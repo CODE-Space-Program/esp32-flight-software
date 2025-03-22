@@ -1,15 +1,34 @@
 #pragma once
 
+#include <vector>
+#include <functional>
+
 #include <NetBIOS.h>
 #include <Arduino.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
-#include <vector>
-#include <functional>
 #include <ArduinoJson.h>
-#include "sensors.h"
 #include <Ticker.h>
 
+#include "sensors.h"
+
+/**
+ * @class GroundControl
+ * @brief Handles two-way communication with the ground control server (our backend) via HTTP.
+ *
+ * Example usage:
+ * @code
+ * GroundControl groundControl("https://spaceprogram.bolls.dev");
+ *
+ * groundControl.connect();
+ *
+ * groundControl.subscribe([](const String &command, const JsonVariant &args) {
+ *     // handle incoming command
+ * });
+ *
+ * groundControl.sendTelemetry(datapoint);
+ * @endcode
+ */
 class GroundControl
 {
 public:
@@ -19,28 +38,48 @@ public:
     {
     }
 
+    /**
+     * Subscribes a callback to be triggered on commands received from our backend.
+     *
+     * @param handler A lambda that takes the command name and JSON arguments.
+     */
     void subscribe(Listener listener)
     {
         listeners.push_back(listener);
     }
 
+    bool isConnecting = false;
+    bool isConnected = false;
+
+    /**
+     * Connects to the backend and starts polling for commands.
+     */
     void connect()
     {
+        if (isConnecting || isConnected)
+            return;
+
+        isConnecting = true;
 
         fetchFlightId();
         requestTimer.attach(1.0, std::bind(&GroundControl::makeRequest, this));
+
+        isConnecting = false;
+        isConnected = true;
     }
 
+    /**
+     * Queues a telemetry log to be sent to the backend.
+     * The queued logs are batched and sent once a second.
+     *
+     * @param data The telemetry data to send.
+     */
     void sendTelemetry(const Data &data)
     {
         StaticJsonDocument<256> logEntry;
         logEntry["raw_altitude"] = data.raw_altitude;
         logEntry["altitude"] = data.estimated_altitude;
         logEntry["velocity"] = data.velocity;
-        // logEntry["temperature"] = data.temperature;
-        // logEntry["gyro_x"] = data.gyro.x;
-        // logEntry["gyro_y"] = data.gyro.y;
-        // logEntry["gyro_z"] = data.gyro.z;
         logEntry["pitch"] = data.estimated_pitch;
         logEntry["yaw"] = data.estimated_yaw;
         logEntry["sent"] = millis();
