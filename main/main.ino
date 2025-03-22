@@ -11,9 +11,9 @@
 enum class State
 {
 
-    Boot,
-    Ready,
-    PreLaunch,
+    Boot, // initial state when the computer is turned on, switches to `Ready` after the `setup()` function is done
+    Ready, // blocks proceeding to the next step until the sensors send correct values
+    PreLaunch, // ready to receive the start command from ground control, switches to `Flight` once the start command is received
     Flight,
     PoweredLanding,
     Landed,
@@ -35,10 +35,6 @@ const char *stateStrings[] = {
     "Error"};
 
 GroundControl groundControl("https://spaceprogram.bolls.dev");
-
-
-bool commandReceived = false;
-
 Servos servos(-65, 65);
 Tvc tvc(servos, 0, 1);
 TvcTest tvcTest;
@@ -49,6 +45,7 @@ void sendTelemetryTask(void *parameter)
     Serial.println(xPortGetCoreID());
     while (true)
     {
+        datapoint.state = stateStrings[static_cast<int>(STATE)];
         datapoint.nominalYawServoDegrees = tvc.yaw;
         datapoint.nominalPitchServoDegrees = tvc.pitch;
     
@@ -83,8 +80,10 @@ void setup()
         if (command == "start")
         {
             Serial.println("Received start command");
+            
+            STATE = State::Flight;
 
-            commandReceived = true;
+            ascendingMotorIgnite();
         }
         if (command == "test_tvc")
         {
@@ -92,14 +91,10 @@ void setup()
 
             if (args.isNull())
             {
-                Serial.println("args are null");
-
                 tvcTest.start(20.0, 10.0);
             }
             else
             {
-                Serial.println("args are not null");
-
                 serializeJsonPretty(args, Serial);
                 Serial.println();
 
@@ -139,8 +134,6 @@ void setup()
 */
 void loop()
 {
-    datapoint.state = stateStrings[static_cast<int>(STATE)];
-
     if (tvcTest.isInProgress())
     {
         float newPitch = tvcTest.getNewPitch();
@@ -187,16 +180,6 @@ void loop()
     case State::PreLaunch:
         // All systems are go at this point, waiting for manual confirmation
         tvc.move(pitch, yaw);
-        if (commandReceived)
-        {
-            Serial.println("Manual Confirmation Received, We are go for launch, initiating countdown");
-            tvc.move(pitch, yaw);
-            ascendingMotorIgnite();
-            if (datapoint.estimated_altitude > 0.3)
-            {
-                STATE = State::Flight;
-            };
-        }
         break;
 
     case State::Flight:
