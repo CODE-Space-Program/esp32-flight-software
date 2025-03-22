@@ -35,7 +35,12 @@ const char *stateStrings[] = {
     "Error"};
 
 GroundControl groundControl("https://spaceprogram.bolls.dev");
-Servos servos(-65, 65);
+// The PCA9685 uses 12-bit resolution (0-4095) to control servos via pulse width modulation.
+// The servos expect 500µs to 2400µs pulses at 50Hz (20ms period).
+// The PCA9685 generates 4096 steps per 20ms, so 4.88µs per step
+// 500µs/4.88µs = 102.5 - rounded to 110 to avoid damaging servos
+// 2400/4.88µs = 491.8 - rounded to 480
+Servos servos(110, 480);
 Tvc tvc(servos, 0, 1);
 TvcTest tvcTest;
 

@@ -6,7 +6,7 @@ Servos::Servos(int servoMin, int servoMax)
 
 void Servos::initialize() {
     pwm.begin();
-    pwm.setPWMFreq(60);
+    pwm.setPWMFreq(50);
 }
 
 void Servos::move(int pin, float angle) {
