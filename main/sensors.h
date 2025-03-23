@@ -32,7 +32,6 @@ float estimated_velocity = 0;
 extern const float SEA_LEVEL_PRESSURE = 766; // example for sea level pressure in Berlin
 extern const float AMBIENT_TEMPERATURE = 22.4;  // To be changed on the day
 const float G = 9.81;                           // gravity constant
-const unsigned long updateInterval = 100;       // Sensor update interval (ms)
 unsigned long lastUpdateTime = 0;
 
 // Data Structure for a single datapoint
@@ -125,12 +124,6 @@ void update_sensors()
     float dt = (currentTime - lastTime) / 1000000.0;  // Convert µs to seconds
     lastTime = currentTime;
 
-    if (printCounter % 100 == 0) {  // Print every 10 iterations (~40Hz instead of 400Hz)
-        Serial.print("dt: ");
-        Serial.println(dt, 6);
-    }
-    printCounter++;
-
     sensors_event_t a, g, temp;
     mpu6050.getEvent(&a, &g, &temp);
 
@@ -186,6 +179,21 @@ void update_sensors()
     //Serial.print(height);
     //Serial.print("Estimated velocity: ");
     //Serial.println(estimated_velocity);
+    if (printCounter % 10 == 0) {  // Print every 10 iterations (~40Hz instead of 400Hz)
+        Serial.print("dt: ");
+        Serial.println(dt, 6);
+
+        Serial.print("yaw angle:  ");
+        Serial.println(gx);
+        Serial.print("pitch angle: ");
+        Serial.println(gz);
+        Serial.print("Estimated height: ");
+        Serial.println(height);
+        //Serial.print("Estimated velocity: ");
+        //Serial.println(estimated_velocity);
+
+    }
+    printCounter++;
 }
 
 void connectWifi()
