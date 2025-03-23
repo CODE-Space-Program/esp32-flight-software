@@ -122,6 +122,9 @@ void setup()
             tvc.moveRaw(90, 90);
             tvc.uninitialize();
         }
+        if (command == "disconnect_wifi") {
+            disconnectWifi();
+        }
     });
 
     xTaskCreatePinnedToCore(

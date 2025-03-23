@@ -214,6 +214,13 @@ void connectWifi()
     Serial.println(WiFi.RSSI());
 }
 
+void disconnectWifi()
+{
+    WiFi.disconnect(true); // true = wipe credentials
+    WiFi.mode(WIFI_OFF);   // turn off WiFi hardware
+    Serial.println("Disconnected from WiFi");
+}
+
 bool checkSensors()
 {
     // performs reading on the bmp390
