@@ -4,11 +4,23 @@ Tvc::Tvc(Servos servos, int pitchServoChannel, int yawServoChannel)
     : servos(servos), pitchServoChannel(pitchServoChannel), yawServoChannel(yawServoChannel) {}
 
 void Tvc::initialize() {
-    servos.initialize();
+    if (!isActive) {
+        servos.initialize();
+
+        isActive = true;
+
+        Serial.println("TVC initialized");
+    }
 }
 
 void Tvc::uninitialize() {
-    servos.uninitialize();
+    if (isActive) {
+        servos.uninitialize();
+
+        isActive = false;
+
+        Serial.println("TVC uninitialized");
+    }
 }
 
 void Tvc::moveRaw(float pitch, float yaw) {
