@@ -7,6 +7,10 @@ void Tvc::initialize() {
     servos.initialize();
 }
 
+void Tvc::uninitialize() {
+    servos.uninitialize();
+}
+
 void Tvc::moveRaw(float pitch, float yaw) {
     this->pitch = pitch;
     this->yaw = yaw;

@@ -15,6 +15,7 @@ public:
     Tvc(Servos servos, int pitchServoChannel, int yawServoChannel);
 
     void initialize();
+    void uninitialize();
 
     /**
      * @brief Move the TVC to the specified angles.
