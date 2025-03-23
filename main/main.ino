@@ -44,6 +44,8 @@ Servos servos(110, 480);
 Tvc tvc(servos, 0, 1);
 TvcTest tvcTest;
 
+bool CONTROL_TVC = false;
+
 void sendTelemetryTask(void *parameter)
 {
     Serial.println("Telemetry is working on core...");
@@ -172,8 +174,9 @@ void loop()
         // check if all systems are go and we are ready to transition to `PreLaunch check`
         if (allSystemsCheck())
         {
-            tvc.move(pitch, yaw);
-
+            if (CONTROL_TVC) {
+                tvc.move(pitch, yaw);
+            }
             STATE = State::PreLaunch;
             Serial.println("All systems are go, transitioning into `PreLaunch` state");
         };
@@ -181,7 +184,9 @@ void loop()
 
     case State::PreLaunch:
         // All systems are go at this point, waiting for manual confirmation
-        tvc.move(pitch, yaw);
+        if (CONTROL_TVC) {
+            tvc.move(pitch, yaw);
+        }
         break;
 
     case State::Flight:

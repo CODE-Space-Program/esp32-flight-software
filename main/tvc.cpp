@@ -27,6 +27,10 @@ void Tvc::moveRaw(float pitch, float yaw) {
     this->pitch = pitch;
     this->yaw = yaw;
 
+    if (!isActive) {
+        Serial.println("WARNING Tvc.moveRaw called while servos are inactive, ignoring");
+        return;
+    }
     servos.move(pitchServoChannel, pitch);
     servos.move(yawServoChannel, yaw);
 }
