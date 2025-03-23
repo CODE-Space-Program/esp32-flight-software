@@ -88,6 +88,7 @@ public:
         logEntry["state"] = data.state;
         logEntry["nominalPitchServoDegrees"] = data.nominalPitchServoDegrees;
         logEntry["nominalYawServoDegrees"] = data.nominalYawServoDegrees;
+        logEntry["servosLocked"] = data.servosLocked;
 
         telemetryBuffer.push_back(logEntry);
         checkAndSendTelemetry();

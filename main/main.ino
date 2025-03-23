@@ -55,6 +55,7 @@ void sendTelemetryTask(void *parameter)
         datapoint.state = stateStrings[static_cast<int>(STATE)];
         datapoint.nominalYawServoDegrees = tvc.yaw;
         datapoint.nominalPitchServoDegrees = tvc.pitch;
+        datapoint.servosLocked = tvc.servosLocked;
     
         groundControl.sendTelemetry(datapoint);
         vTaskDelay(pdMS_TO_TICKS(100));

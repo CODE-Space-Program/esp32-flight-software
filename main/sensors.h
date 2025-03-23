@@ -55,6 +55,8 @@ struct Data
     float nominalYawServoDegrees = 0;
     float nominalPitchServoDegrees = 0;
 
+    bool servosLocked = true;
+
 } datapoint;
 
 /* Initialize sensor objects here */

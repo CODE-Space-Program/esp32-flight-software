@@ -4,20 +4,20 @@ Tvc::Tvc(Servos servos, int pitchServoChannel, int yawServoChannel)
     : servos(servos), pitchServoChannel(pitchServoChannel), yawServoChannel(yawServoChannel) {}
 
 void Tvc::initialize() {
-    if (!isActive) {
+    if (servosLocked) {
         servos.initialize();
 
-        isActive = true;
+        servosLocked = false;
 
         Serial.println("TVC initialized");
     }
 }
 
 void Tvc::uninitialize() {
-    if (isActive) {
+    if (!servosLocked) {
         servos.uninitialize();
 
-        isActive = false;
+        servosLocked = true;
 
         Serial.println("TVC uninitialized");
     }
@@ -27,8 +27,8 @@ void Tvc::moveRaw(float pitch, float yaw) {
     this->pitch = pitch;
     this->yaw = yaw;
 
-    if (!isActive) {
-        Serial.println("WARNING Tvc.moveRaw called while servos are inactive, ignoring");
+    if (servosLocked) {
+        Serial.println("WARNING Tvc.moveRaw called while servos are locked, ignoring");
         return;
     }
     servos.move(pitchServoChannel, pitch);
