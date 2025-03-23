@@ -82,6 +82,8 @@ public:
         logEntry["velocity"] = data.velocity;
         logEntry["pitch"] = data.estimated_pitch;
         logEntry["yaw"] = data.estimated_yaw;
+        logEntry["roll"] = data.estimated_roll;
+        logEntry["temperature"] = data.temperature;
         logEntry["sent"] = millis();
         logEntry["state"] = data.state;
         logEntry["nominalPitchServoDegrees"] = data.nominalPitchServoDegrees;

@@ -49,6 +49,7 @@ struct Data
     float velocity;
     float estimated_pitch;
     float estimated_yaw;
+    float estimated_roll;
 
     char const null_terminator = 0; // Null terminator to avoid overflow
 
@@ -173,6 +174,7 @@ void update_sensors()
     datapoint.velocity = estimated_velocity;
     datapoint.estimated_yaw = gx;
     datapoint.estimated_pitch = gz;
+    datapoint.estimated_roll = gy;
 
     //end_time = millis();
 
