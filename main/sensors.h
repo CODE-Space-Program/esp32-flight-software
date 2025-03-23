@@ -14,7 +14,7 @@
 #define DESCENDING_MOTOR_IGNITION_PIN 6
 
 // sample freq in Hz
-#define FREQ 120.0
+#define FREQ 400.0
 
 // Wifi connection variables
 const char *ssid = "VIRUS";
@@ -113,14 +113,23 @@ double gx = 0, gy = 0, gz = 0;
 double gyrX = 0, gyrY = 0, gyrZ = 0;
 double accX = 0, accY = 0, accZ = 0;
 
+int printCounter = 0;
+
 /* Update sensor readings and log data */
 void update_sensors()
 {
 
     double ax, ay, az;
-    unsigned long start_time, end_time;
+    static unsigned long lastTime = 0; // Store previous loop time
+    unsigned long currentTime = micros();
+    float dt = (currentTime - lastTime) / 1000000.0;  // Convert µs to seconds
+    lastTime = currentTime;
 
-    start_time = millis();
+    if (printCounter % 100 == 0) {  // Print every 10 iterations (~40Hz instead of 400Hz)
+        Serial.print("dt: ");
+        Serial.println(dt, 6);
+    }
+    printCounter++;
 
     sensors_event_t a, g, temp;
     mpu6050.getEvent(&a, &g, &temp);
@@ -144,13 +153,13 @@ void update_sensors()
     az = atan2(accZ, sqrt(pow(accX, 2) + pow(accY, 2))) * 180 / M_PI;
 
     // angles based on the gyroscope
-    gx = gx + gyrX / FREQ;
-    gy = gy + gyrY / FREQ;
-    gz = gz + gyrZ / FREQ;
+    gx = gx + gyrX * dt;
+    gy = gy + gyrY * dt;
+    gz = gz + gyrZ * dt;
 
     // complementary filter
-    gx = ax * 0.96 + gx * 0.04;
-    gz = az * 0.96 + gz * 0.04;
+    gx = gx * 0.96 + ax * 0.04;
+    gz = gz * 0.96 + az * 0.04;
 
     float raw_height = bmp.readAltitude(SEA_LEVEL_PRESSURE);
     float raw_velocity = a.acceleration.y;
@@ -165,18 +174,18 @@ void update_sensors()
     datapoint.estimated_yaw = gx;
     datapoint.estimated_pitch = gz;
 
-    end_time = millis();
+    //end_time = millis();
 
-    delay(((1 / FREQ) * 1000) - (end_time - start_time));
+    //delay(((1 / FREQ) * 1000) - (end_time - start_time));
 
-    Serial.println("yaw angle:  ");
-    Serial.println(gx);
-    Serial.println("pitch angle");
-    Serial.println(gz);
-    Serial.print("Estimated height: ");
-    Serial.print(height);
-    Serial.print("Estimated velocity: ");
-    Serial.println(estimated_velocity);
+    //Serial.println("yaw angle:  ");
+    //Serial.println(gx);
+    //Serial.println("pitch angle");
+    //Serial.println(gz);
+    //Serial.print("Estimated height: ");
+    //Serial.print(height);
+    //Serial.print("Estimated velocity: ");
+    //Serial.println(estimated_velocity);
 }
 
 void connectWifi()
