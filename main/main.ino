@@ -44,7 +44,7 @@ Servos servos(110, 480);
 Tvc tvc(servos, 0, 1);
 TvcTest tvcTest;
 
-bool CONTROL_TVC = false;
+bool CONTROL_TVC = true;
 
 void sendTelemetryTask(void *parameter)
 {
