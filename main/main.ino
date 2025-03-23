@@ -160,6 +160,10 @@ void loop()
     } else if (STATE < State::Flight) {
         tvc.uninitialize();
     }
+    if (STATE == State::Flight)
+    {
+        tvc.initialize();
+    }
 
     update_sensors();
 
