@@ -140,6 +140,8 @@ void setup()
     Serial.println("Setup completed!");
 }
 
+int lastTime = 0;
+
 /* LOOP
 
     This funtion will run for the whole duration of the flight
@@ -149,13 +151,16 @@ void loop()
 {
     if (tvcTest.isInProgress())
     {
-        float newPitch = tvcTest.getNewPitch();
-        float newYaw = tvcTest.getNewYaw();
+        lastTime++;
+        if (lastTime % 10 == 0) {
 
-        Serial.println("[TVC Test]: New pitch: " + String(newPitch) + ", New yaw: " + String(newYaw));
+            float newPitch = tvcTest.getNewPitch();
+            float newYaw = tvcTest.getNewYaw();
 
-        tvc.moveRaw(newPitch, newYaw);
+            Serial.println("[TVC Test]: New pitch: " + String(newPitch) + ", New yaw: " + String(newYaw));
 
+            tvc.moveRaw(newPitch, newYaw);
+        }
         return;
     } else if (STATE < State::Flight) {
         tvc.uninitialize();
