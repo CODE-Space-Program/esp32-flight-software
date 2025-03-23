@@ -109,8 +109,9 @@ void setup()
 
                 float maxDegrees = args["maxDegrees"] | 20.0;
                 float stepDegrees = args["stepDegrees"] | 10.0;
+                int duration = args["duration"] | 5000;
 
-                tvcTest.start(maxDegrees, stepDegrees);
+                tvcTest.start(maxDegrees, stepDegrees, duration);
             }
         }
         if (command == "zero_tvc")
