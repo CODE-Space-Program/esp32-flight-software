@@ -116,7 +116,9 @@ void setup()
         if (command == "zero_tvc")
         {
             Serial.println("Zeroing TVC");
-            tvc.moveRaw(0, 0);
+            tvc.initialize();
+            tvc.moveRaw(90, 90);
+            tvc.uninitialize();
         }
     });
 
