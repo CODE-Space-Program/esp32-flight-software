@@ -67,8 +67,6 @@ void sendTelemetryTask(void *parameter)
 void setup()
 {
     Serial.begin(9600);
-
-    tvc.initialize();    
     
     connectWifi();
     setup_sensors();
@@ -85,6 +83,8 @@ void setup()
         if (command == "start")
         {
             Serial.println("Received start command");
+
+            tvc.initialize();
             
             STATE = State::Flight;
 
@@ -93,6 +93,8 @@ void setup()
         if (command == "test_tvc")
         {
             Serial.println("Starting TVC test");
+
+            tvc.initialize();
 
             if (args.isNull())
             {
@@ -149,6 +151,8 @@ void loop()
         tvc.moveRaw(newPitch, newYaw);
 
         return;
+    } else if (STATE < State::Flight) {
+        tvc.uninitialize();
     }
 
     update_sensors();

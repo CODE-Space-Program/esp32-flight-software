@@ -10,6 +10,7 @@ public:
     Servos(int servoMin, int servoMax);
 
     void initialize();
+    void uninitialize();
 
     void move(int channel, float angle);
 
