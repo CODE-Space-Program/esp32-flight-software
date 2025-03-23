@@ -10,8 +10,8 @@
 #include <vector>
 #include <functional>
 
-#define ASCENDING_MOTOR_IGNITION_PIN 5 // change this to the GPIO pin connected to the ESP32
-#define DESCENDING_MOTOR_IGNITION_PIN 6
+#define ASCENDING_MOTOR_IGNITION_PIN 5
+#define DESCENDING_MOTOR_IGNITION_PIN 35
 
 // sample freq in Hz
 #define FREQ 400.0
@@ -262,8 +262,8 @@ void pyroInit()
     pinMode(ASCENDING_MOTOR_IGNITION_PIN, OUTPUT);
     digitalWrite(ASCENDING_MOTOR_IGNITION_PIN, LOW);
 
-    // pinMode(DESCENDING_MOTOR_IGNITION_PIN, OUTPUT); // uncomment this before flight
-    // digitalWrite(DESCENDING_MOTOR_IGNITION_PIN, LOW);
+    pinMode(DESCENDING_MOTOR_IGNITION_PIN, OUTPUT); // uncomment this before flight
+    digitalWrite(DESCENDING_MOTOR_IGNITION_PIN, LOW);
     Serial.println("Pyro channels initialized");
 }
 
