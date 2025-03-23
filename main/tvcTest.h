@@ -2,12 +2,9 @@
 
 bool DO_CIRCLE = true;
 
-float angle = 0.0f;              // Shared angle in radians
-float angleStep = 0.05f;         // Step size per update
-float radiusPitch = 10.0f;       // Amplitude of pitch movement
-float radiusYaw = 10.0f;         // Amplitude of yaw movement
-float centerPitch = 0.0f;        // Center value for pitch
-float centerYaw = 0.0f;          // Center value for yaw
+float angle = 0.0f;
+float centerPitch = 90.0f;
+float centerYaw = 90.0f;
 
 class TvcTest
 {
