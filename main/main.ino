@@ -155,7 +155,7 @@ void loop()
     if (tvcTest.isInProgress())
     {
         lastTime++;
-        if (lastTime % 10 == 0) {
+        if (lastTime % 100 == 0) {
 
             float newPitch = tvcTest.getNewPitch();
             float newYaw = tvcTest.getNewYaw();
