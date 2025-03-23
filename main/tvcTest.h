@@ -1,5 +1,14 @@
 #pragma once
 
+bool DO_CIRCLE = true;
+
+float angle = 0.0f;              // Shared angle in radians
+float angleStep = 0.05f;         // Step size per update
+float radiusPitch = 10.0f;       // Amplitude of pitch movement
+float radiusYaw = 10.0f;         // Amplitude of yaw movement
+float centerPitch = 0.0f;        // Center value for pitch
+float centerYaw = 0.0f;          // Center value for yaw
+
 class TvcTest
 {
 public:
@@ -29,6 +38,11 @@ public:
 
     float getNewPitch()
     {
+        if (DO_CIRCLE) {
+            float newPitch = centerPitch + maxPitch * sin(angle);
+            lastPitch = newPitch;
+            return newPitch;
+        }
         float newPitch;
 
         if (pitchDirection)
@@ -55,6 +69,12 @@ public:
 
     float getNewYaw()
     {
+        if (DO_CIRCLE) {
+            float newYaw = centerYaw + maxPitch * cos(angle);
+            lastYaw = newYaw;
+            angle += stepSizeYaw; // Advance the shared angle
+            return newYaw;
+        }
         float newYaw;
 
         if (yawDirection)
