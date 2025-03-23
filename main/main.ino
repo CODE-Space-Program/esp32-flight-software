@@ -155,14 +155,7 @@ void loop()
         tvc.uninitialize();
     }
 
-    unsigned long currentTime = millis();
-
-    // update sensors every updateinterval milliseconds
-    if (currentTime - lastUpdateTime >= updateInterval)
-    {
-        update_sensors();
-        lastUpdateTime = currentTime;
-    }
+    update_sensors();
 
     float pitch = gx;
     float yaw = gz;
