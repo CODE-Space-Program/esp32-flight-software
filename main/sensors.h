@@ -11,13 +11,13 @@
 #include <functional>
 
 #define ASCENDING_MOTOR_IGNITION_PIN 5
-#define DESCENDING_MOTOR_IGNITION_PIN 35
+#define DESCENDING_MOTOR_IGNITION_PIN 33
 
 // sample freq in Hz
 #define FREQ 400.0
 
 // Wifi connection variables
-const char *ssid = "VIRUS";
+const char *ssid = "CODE Guests";
 // const char *password = "Code!University";
 
 extern float estimated_pitch;
@@ -29,7 +29,7 @@ extern float estimated_velocity;
 float estimated_height = 0;
 float estimated_velocity = 0;
 // constants
-extern const float SEA_LEVEL_PRESSURE = 766; // example for sea level pressure in Berlin
+extern const float SEA_LEVEL_PRESSURE = 1013.68; // example for sea level pressure in Berlin
 extern const float AMBIENT_TEMPERATURE = 22.4;  // To be changed on the day
 const float G = 9.81;                           // gravity constant
 unsigned long lastUpdateTime = 0;
@@ -161,7 +161,7 @@ void update_sensors()
     float raw_velocity = a.acceleration.y;
     float raw_velocity_ms2 = raw_velocity * G; // convert to m/s2
 
-    float height = (heightKalmanFilter.updateEstimate(raw_height)); // code 1st floor height for testing
+    float height = (heightKalmanFilter.updateEstimate(raw_height - 40)); // code 1st floor height for testing
     float estimated_velocity = velocityKalmanFilter.updateEstimate(raw_velocity_ms2);
 
     datapoint.raw_altitude = raw_height;
@@ -191,9 +191,8 @@ void update_sensors()
         Serial.println(gx);
         Serial.print("pitch angle: ");
         Serial.println(gz);
-        Serial.print("Estimated height: ");
+        Serial.print("height: ");
         Serial.println(height);
-        //Serial.print("Estimated velocity: ");
         //Serial.println(estimated_velocity);
 
     }
