@@ -1,5 +1,11 @@
 #pragma once
 
+bool DO_CIRCLE = true;
+
+float angle = 0.0f;
+float centerPitch = 90.0f;
+float centerYaw = 90.0f;
+
 class TvcTest
 {
 public:
@@ -29,6 +35,11 @@ public:
 
     float getNewPitch()
     {
+        if (DO_CIRCLE) {
+            float newPitch = centerPitch + maxPitch * sin(angle);
+            lastPitch = newPitch;
+            return newPitch;
+        }
         float newPitch;
 
         if (pitchDirection)
@@ -55,6 +66,12 @@ public:
 
     float getNewYaw()
     {
+        if (DO_CIRCLE) {
+            float newYaw = centerYaw + maxPitch * cos(angle);
+            lastYaw = newYaw;
+            angle += stepSizeYaw; // Advance the shared angle
+            return newYaw;
+        }
         float newYaw;
 
         if (yawDirection)

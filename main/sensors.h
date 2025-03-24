@@ -55,6 +55,8 @@ struct Data
     float nominalYawServoDegrees = 0;
     float nominalPitchServoDegrees = 0;
 
+    bool servosLocked = true;
+
 } datapoint;
 
 /* Initialize sensor objects here */
@@ -210,6 +212,13 @@ void connectWifi()
     }
     Serial.println("Connected to WiFi");
     Serial.println(WiFi.RSSI());
+}
+
+void disconnectWifi()
+{
+    WiFi.disconnect(true); // true = wipe credentials
+    WiFi.mode(WIFI_OFF);   // turn off WiFi hardware
+    Serial.println("Disconnected from WiFi");
 }
 
 bool checkSensors()

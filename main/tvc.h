@@ -31,6 +31,8 @@ public:
      */
     void move(float pitch, float yaw);
 
+    bool servosLocked = true;
+
 private:
     Servos servos;
 

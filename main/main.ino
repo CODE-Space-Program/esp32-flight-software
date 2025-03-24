@@ -44,6 +44,8 @@ Servos servos(110, 480);
 Tvc tvc(servos, 0, 1);
 TvcTest tvcTest;
 
+bool CONTROL_TVC = false;
+
 void sendTelemetryTask(void *parameter)
 {
     Serial.println("Telemetry is working on core...");
@@ -53,6 +55,7 @@ void sendTelemetryTask(void *parameter)
         datapoint.state = stateStrings[static_cast<int>(STATE)];
         datapoint.nominalYawServoDegrees = tvc.yaw;
         datapoint.nominalPitchServoDegrees = tvc.pitch;
+        datapoint.servosLocked = tvc.servosLocked;
     
         groundControl.sendTelemetry(datapoint);
         vTaskDelay(pdMS_TO_TICKS(100));
@@ -107,14 +110,20 @@ void setup()
 
                 float maxDegrees = args["maxDegrees"] | 20.0;
                 float stepDegrees = args["stepDegrees"] | 10.0;
+                int duration = args["duration"] | 5000;
 
-                tvcTest.start(maxDegrees, stepDegrees);
+                tvcTest.start(maxDegrees, stepDegrees, duration);
             }
         }
         if (command == "zero_tvc")
         {
             Serial.println("Zeroing TVC");
-            tvc.moveRaw(0, 0);
+            tvc.initialize();
+            tvc.moveRaw(90, 90);
+            tvc.uninitialize();
+        }
+        if (command == "disconnect_wifi") {
+            disconnectWifi();
         }
     });
 
@@ -134,6 +143,8 @@ void setup()
     Serial.println("Setup completed!");
 }
 
+int lastTime = 0;
+
 /* LOOP
 
     This funtion will run for the whole duration of the flight
@@ -143,13 +154,16 @@ void loop()
 {
     if (tvcTest.isInProgress())
     {
-        float newPitch = tvcTest.getNewPitch();
-        float newYaw = tvcTest.getNewYaw();
+        lastTime++;
+        if (lastTime % 100 == 0) {
 
-        Serial.println("[TVC Test]: New pitch: " + String(newPitch) + ", New yaw: " + String(newYaw));
+            float newPitch = tvcTest.getNewPitch();
+            float newYaw = tvcTest.getNewYaw();
 
-        tvc.moveRaw(newPitch, newYaw);
+            Serial.println("[TVC Test]: New pitch: " + String(newPitch) + ", New yaw: " + String(newYaw));
 
+            tvc.moveRaw(newPitch, newYaw);
+        }
         return;
     } else if (STATE < State::Flight) {
         tvc.uninitialize();
@@ -172,8 +186,9 @@ void loop()
         // check if all systems are go and we are ready to transition to `PreLaunch check`
         if (allSystemsCheck())
         {
-            tvc.move(pitch, yaw);
-
+            if (CONTROL_TVC) {
+                tvc.move(pitch, yaw);
+            }
             STATE = State::PreLaunch;
             Serial.println("All systems are go, transitioning into `PreLaunch` state");
         };
@@ -181,7 +196,9 @@ void loop()
 
     case State::PreLaunch:
         // All systems are go at this point, waiting for manual confirmation
-        tvc.move(pitch, yaw);
+        if (CONTROL_TVC) {
+            tvc.move(pitch, yaw);
+        }
         break;
 
     case State::Flight:
