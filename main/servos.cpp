@@ -16,6 +16,6 @@ void Servos::uninitialize() {
 }
 
 void Servos::move(int pin, float angle) {
-    int pulseLength = map(constrain(angle, 0, 180), 0, 180, servoMin, servoMax);
+    int pulseLength = map(constrain(angle, 70, 110), 0, 180, servoMin, servoMax);
     pwm.setPWM(pin, 0, pulseLength);
 }
