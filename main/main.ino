@@ -187,7 +187,7 @@ void loop()
         if (allSystemsCheck())
         {
             if (CONTROL_TVC) {
-                tvc.move(pitch, yaw);
+                tvc.move(pitch+90, yaw+90);
             }
             STATE = State::PreLaunch;
             Serial.println("All systems are go, transitioning into `PreLaunch` state");
@@ -197,14 +197,16 @@ void loop()
     case State::PreLaunch:
         // All systems are go at this point, waiting for manual confirmation
         if (CONTROL_TVC) {
-            tvc.move(pitch, yaw);
+            tvc.move(pitch+90, yaw+90);
         }
         break;
 
     case State::Flight:
         // flight mode, control the TVC
-        tvc.move(pitch, yaw);
-        Serial.println("Rocket in flight");
+        tvc.move(pitch+90, yaw+90);
+        Serial.println("Rocket in flight, pitch & yaw are:");
+        Serial.println(pitch);
+        Serial.println(yaw);
 
         // check if the rocket is descending to enter the `PoweredLanding` state
         if (datapoint.estimated_altitude > 200)
@@ -215,7 +217,7 @@ void loop()
         break;
 
     case State::PoweredLanding:
-        tvc.move(pitch, yaw);
+        tvc.move(pitch+90, yaw+90);
 
         // logic for the flight computer to calculate when to start the landing burn
         if (datapoint.estimated_altitude < 200)

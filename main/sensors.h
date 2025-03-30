@@ -17,7 +17,7 @@
 #define FREQ 400.0
 
 // Wifi connection variables
-const char *ssid = "CODE Guests";
+const char *ssid = "VIRUS";
 // const char *password = "Code!University";
 
 extern float estimated_pitch;
@@ -184,15 +184,15 @@ void update_sensors()
     //Serial.print("Estimated velocity: ");
     //Serial.println(estimated_velocity);
     if (printCounter % 10 == 0) {  // Print every 10 iterations (~40Hz instead of 400Hz)
-        Serial.print("dt: ");
-        Serial.println(dt, 6);
+        //Serial.print("dt: ");
+        //Serial.println(dt, 6);
 
         Serial.print("yaw angle:  ");
         Serial.println(gx);
         Serial.print("pitch angle: ");
         Serial.println(gz);
-        Serial.print("height: ");
-        Serial.println(height);
+        //Serial.print("height: ");
+        //Serial.println(height);
         //Serial.println(estimated_velocity);
 
     }
