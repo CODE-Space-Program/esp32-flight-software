@@ -11,6 +11,7 @@ public:
 
     void initialize();
     void uninitialize();
+    void initializeOnceOnStartup();
 
     void move(int channel, float angle);
 
