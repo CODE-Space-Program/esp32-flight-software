@@ -1,10 +1,10 @@
 #include "sensors.h"
 #include "SimpleKalmanFilter.h"
-#include <ESP32Servo.h>
 #include "tvc.h"
 #include "groundControl.h"
 #include "tvcTest.h"
 #include <ArduinoJson.h>
+#include <servos.h>
 
 // `State` represents all states of the flight and has an additional "Boot" and "Error" state
 

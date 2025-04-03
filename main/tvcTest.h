@@ -40,7 +40,6 @@ public:
             lastPitch = newPitch;
             return newPitch;
         }
-        return;
         float newPitch;
 
         if (pitchDirection)
@@ -73,7 +72,6 @@ public:
             angle += stepSizeYaw; // Advance the shared angle
             return newYaw;
         }
-        return;
         float newYaw;
 
         if (yawDirection)
