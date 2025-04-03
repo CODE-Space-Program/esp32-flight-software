@@ -4,10 +4,12 @@
 Servos::Servos(int servoMin, int servoMax)
     : pwm(Adafruit_PWMServoDriver()), servoMin(servoMin), servoMax(servoMax) {}
 
-void Servos::initialize() {
+void Servos::initializeOnceOnStartup() {
     pwm.begin();
     pwm.setPWMFreq(50);
 }
+
+void Servos::initialize() {}
 
 void Servos::uninitialize() {
     // this should release the servos
