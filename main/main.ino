@@ -41,7 +41,7 @@ GroundControl groundControl("https://spaceprogram.bolls.dev");
 // 500µs/4.88µs = 102.5 - rounded to 110 to avoid damaging servos
 // 2400/4.88µs = 491.8 - rounded to 480
 Servos servos(110, 480);
-servos.initializeOnceOnStartup();
+// servos.initializeOnceOnStartup();
 Tvc tvc(servos, 0, 1);
 TvcTest tvcTest;
 
