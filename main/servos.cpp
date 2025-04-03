@@ -2,7 +2,9 @@
 #include <Arduino.h> // for constrain() and map()
 
 Servos::Servos(int servoMin, int servoMax)
-    : pwm(Adafruit_PWMServoDriver()), servoMin(servoMin), servoMax(servoMax) {}
+    : pwm(Adafruit_PWMServoDriver()), servoMin(servoMin), servoMax(servoMax) {
+        this->initializeOnceOnStartup();
+    }
 
 void Servos::initializeOnceOnStartup() {
     pwm.begin();
