@@ -13,8 +13,6 @@
 #define ASCENDING_MOTOR_IGNITION_PIN 5
 #define DESCENDING_MOTOR_IGNITION_PIN 33
 
-// sample freq in Hz
-#define FREQ 400.0
 
 // Wifi connection variables
 const char *ssid = "VIRUS";
@@ -168,7 +166,7 @@ void update_sensors()
     datapoint.estimated_altitude = height;
     datapoint.velocity = estimated_velocity;
     datapoint.estimated_yaw = gx;
-    datapoint.estimated_pitch = gz;
+    datapoint.estimated_pitch = gz; // inverted pitch and yaw
     datapoint.estimated_roll = gy;
 
     //end_time = millis();

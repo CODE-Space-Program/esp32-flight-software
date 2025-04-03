@@ -52,12 +52,14 @@ void Tvc::move(float pitch, float yaw) {
 
     float errorPitch = -pitch;
     integralPitch += errorPitch * dt;
+    integralPitch = constrain(integralPitch, -10, 10);
     float derivativePitch = (errorPitch - prevErrorPitch) / dt;
     float controlSignalPitch = Kp * errorPitch + Ki * integralPitch + Kd * derivativePitch;
     prevErrorPitch = errorPitch;
 
     float errorYaw = -yaw;
     integralYaw += errorYaw * dt;
+    integralYaw = constrain(integralYaw, -10, 10);
     float derivativeYaw = (errorYaw - prevErrorYaw) / dt ;
     float controlSignalYaw = Kp * errorYaw + Ki * integralYaw + Kd * derivativeYaw;
     prevErrorYaw = errorYaw;
@@ -66,8 +68,8 @@ void Tvc::move(float pitch, float yaw) {
     controlSignalYaw = scaleControlSignal(controlSignalYaw, -25, 25);
 
 
-    Serial.println("Control signal pitch and control signal yaw:");
-    Serial.println(controlSignalPitch);
-    Serial.println(controlSignalYaw);
-    moveRaw(controlSignalPitch, controlSignalYaw);
+    // Serial.println("Control signal pitch and control signal yaw:");
+    // Serial.println(controlSignalPitch);
+    // Serial.println(controlSignalYaw);
+    moveRaw(controlSignalPitch + 90, controlSignalYaw + 90);
 }
