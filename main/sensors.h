@@ -27,7 +27,7 @@ extern float estimated_velocity;
 float estimated_height = 0;
 float estimated_velocity = 0;
 // constants
-extern const float SEA_LEVEL_PRESSURE = 1013.68; // example for sea level pressure in Berlin
+extern const float SEA_LEVEL_PRESSURE = 1024.63; // example for sea level pressure in Berlin
 extern const float AMBIENT_TEMPERATURE = 22.4;  // To be changed on the day
 const float G = 9.81;                           // gravity constant
 unsigned long lastUpdateTime = 0;
@@ -47,6 +47,8 @@ struct Data
     float estimated_pitch;
     float estimated_yaw;
     float estimated_roll;
+    float apogee;
+
 
     char const null_terminator = 0; // Null terminator to avoid overflow
 
@@ -159,7 +161,7 @@ void update_sensors()
     float raw_velocity = a.acceleration.y;
     float raw_velocity_ms2 = raw_velocity * G; // convert to m/s2
 
-    float height = (heightKalmanFilter.updateEstimate(raw_height - 40)); // code 1st floor height for testing
+    float height = (heightKalmanFilter.updateEstimate(raw_height - 44)); // code 1st floor height for testing
     float estimated_velocity = velocityKalmanFilter.updateEstimate(raw_velocity_ms2);
 
     datapoint.raw_altitude = raw_height;
@@ -255,6 +257,18 @@ bool allSystemsCheck()
     }
 }
 
+void fireLandingBurn() {
+
+    float fireLandingMotorAlt = 0.6 * datapoint.apogee;
+    bool landingMotorIgnited = false;
+
+
+    if (datapoint.estimated_altitude <= fireLandingMotorAlt && !landingMotorIgnited) {
+        descendingMotorIgnite();
+        landingMotorIgnited = true;
+    }
+}
+
 void ascendingMotorIgnite()
 {
     digitalWrite(ASCENDING_MOTOR_IGNITION_PIN, HIGH);
@@ -314,12 +328,14 @@ bool detectApogee(float currentAltitude) {
         apogeeDetected = false;
     }
 
-    if (currentAltitude < maxAltitude && !apogeeDetected) {
+    if (currentAltitude < maxAltitude - 1.0 && !apogeeDetected) {
         apogeeDetected = true;
         Serial.println("Apogee detected!");
         Serial.print("Max Altitude: ");
         Serial.println(maxAltitude);
     }
+
+    datapoint.apogee = maxAltitude;
 
     return apogeeDetected;
 }

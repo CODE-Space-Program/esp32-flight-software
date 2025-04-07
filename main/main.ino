@@ -206,7 +206,8 @@ void loop()
         // Serial.println("Rocket in flight, pitch & yaw are:");
         // Serial.println(pitch);
         // Serial.println(yaw);
-
+        Serial.println("current estimated altitude is: ");
+        Serial.println(datapoint.estimated_altitude);
         // check if the rocket is descending to enter the `PoweredLanding` state
         if (detectApogee(datapoint.estimated_altitude)) {
             STATE = State::PoweredLanding;
@@ -216,13 +217,13 @@ void loop()
 
     case State::PoweredLanding:
         tvc.move(pitch, yaw);
+        FireLandingBurn();
 
-        // logic for the flight computer to calculate when to start the landing burn
-        if (datapoint.estimated_altitude < 200)
+        if (datapoint.estimated_altitude < 0.5)
         {
+            Serial.println("eagle has landed!");
             STATE = State::Landed;
         };
-
         break;
 
     case State::Landed:
