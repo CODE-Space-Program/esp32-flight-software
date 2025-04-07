@@ -209,8 +209,7 @@ void loop()
         // Serial.println(yaw);
 
         // check if the rocket is descending to enter the `PoweredLanding` state
-        if (datapoint.estimated_altitude > 200)
-        {
+        if (detectApogee(datapoint.estimated_altitude)) {
             STATE = State::PoweredLanding;
             Serial.println("Rocket is descending, entering `PoweredLanding` state");
         }

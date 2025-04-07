@@ -304,3 +304,22 @@ void calibrateMpu6050()
     gyrZoffs = zSum / num;
     Serial.println("MPU6050 calibrated...");
 }
+
+bool detectApogee(float currentAltitude) {
+    static float maxAltitude = 0.0;
+    static bool apogeeDetected = false;
+
+    if (currentAltitude > maxAltitude) {
+        maxAltitude = currentAltitude;
+        apogeeDetected = false;
+    }
+
+    if (currentAltitude < maxAltitude && !apogeeDetected) {
+        apogeeDetected = true;
+        Serial.println("Apogee detected!");
+        Serial.print("Max Altitude: ");
+        Serial.println(maxAltitude);
+    }
+
+    return apogeeDetected;
+}
