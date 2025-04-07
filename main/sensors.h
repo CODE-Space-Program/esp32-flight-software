@@ -161,7 +161,7 @@ void update_sensors()
     float raw_velocity = a.acceleration.y;
     float raw_velocity_ms2 = raw_velocity * G; // convert to m/s2
 
-    float height = (heightKalmanFilter.updateEstimate(raw_height - 44)); // code 1st floor height for testing
+    float height = (heightKalmanFilter.updateEstimate(raw_height -38)); // code 1st floor height for testing
     float estimated_velocity = velocityKalmanFilter.updateEstimate(raw_velocity_ms2);
 
     datapoint.raw_altitude = raw_height;
@@ -257,18 +257,6 @@ bool allSystemsCheck()
     }
 }
 
-void fireLandingBurn() {
-
-    float fireLandingMotorAlt = 0.6 * datapoint.apogee;
-    bool landingMotorIgnited = false;
-
-
-    if (datapoint.estimated_altitude <= fireLandingMotorAlt && !landingMotorIgnited) {
-        descendingMotorIgnite();
-        landingMotorIgnited = true;
-    }
-}
-
 void ascendingMotorIgnite()
 {
     digitalWrite(ASCENDING_MOTOR_IGNITION_PIN, HIGH);
@@ -283,6 +271,18 @@ void descendingMotorIgnite()
     delay(1000);
     digitalWrite(DESCENDING_MOTOR_IGNITION_PIN, LOW);
     Serial.println("Descending motor ignited");
+}
+
+void fireLandingBurn() {
+
+    float fireLandingMotorAlt = 0.6 * datapoint.apogee;
+    bool landingMotorIgnited = false;
+
+
+    if (datapoint.estimated_altitude <= fireLandingMotorAlt && !landingMotorIgnited) {
+        descendingMotorIgnite();
+        landingMotorIgnited = true;
+    }
 }
 
 void pyroInit()
