@@ -217,12 +217,13 @@ void loop()
     case State::PoweredLanding:
         tvc.move(pitch, yaw);
         fireLandingBurn();
+        STATE = State::Landed;
 
-        if (datapoint.estimated_altitude > 200) 
+        /*if (datapoint.estimated_altitude > 200) 
         {
             Serial.println("eagle has landed!");
             STATE = State::Landed;
-        };
+        };*/
         break;
 
     case State::Landed:

@@ -27,7 +27,7 @@ extern float estimated_velocity;
 float estimated_height = 0;
 float estimated_velocity = 0;
 // constants
-extern const float SEA_LEVEL_PRESSURE = 1024.63; // example for sea level pressure in Berlin
+extern const float SEA_LEVEL_PRESSURE = 1016.18; // example for sea level pressure in Berlin
 extern const float AMBIENT_TEMPERATURE = 22.4;  // To be changed on the day
 const float G = 9.81;                           // gravity constant
 unsigned long lastUpdateTime = 0;
