@@ -164,7 +164,7 @@ void update_sensors()
     float raw_velocity = a.acceleration.y;
     float raw_velocity_ms2 = raw_velocity * G; // convert to m/s2
 
-    float height = (heightKalmanFilter.updateEstimate(raw_height)); // code 1st floor height for testing
+    float height = (heightKalmanFilter.updateEstimate(raw_height - 54)); // code 1st floor height for testing
     float estimated_velocity = velocityKalmanFilter.updateEstimate(raw_velocity_ms2);
 
     datapoint.raw_altitude = raw_height;
@@ -186,20 +186,20 @@ void update_sensors()
     //Serial.print(height);
     //Serial.print("Estimated velocity: ");
     //Serial.println(estimated_velocity);
-    if (printCounter % 10 == 0) {  // Print every 10 iterations (~40Hz instead of 400Hz)
+    //if (printCounter % 10 == 0) {  // Print every 10 iterations (~40Hz instead of 400Hz)
         //Serial.print("dt: ");
         //Serial.println(dt, 6);
 
-        Serial.print("yaw angle:  ");
-        Serial.println(gx);
-        Serial.print("pitch angle: ");
-        Serial.println(gz);
+        //Serial.print("yaw angle:  ");
+        //Serial.println(gx);
+        //Serial.print("pitch angle: ");
+        //.println(gz);
         //Serial.print("height: ");
         //Serial.println(height);
         //Serial.println(estimated_velocity);
 
-    }
-    printCounter++;
+    //}
+    //printCounter++;
 }
 
 void connectWifi()
