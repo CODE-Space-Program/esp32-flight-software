@@ -217,7 +217,6 @@ void loop()
     case State::PoweredLanding:
         tvc.move(pitch, yaw);
         fireLandingBurn();
-        STATE = State::Landed;
 
         if (datapoint.estimated_altitude < 2) 
         {
