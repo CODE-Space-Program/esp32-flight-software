@@ -123,6 +123,14 @@ void setup()
         if (command == "disconnect_wifi") {
             disconnectWifi();
         }
+        if (command == "set_parameters") {
+            serializeJsonPretty(args, Serial);
+            Serial.println();
+
+            float seaLevelPressure = args["seaLevelPressure"] | 1016.18;
+
+            datapoint.sea_level_pressure = seaLevelPressure;
+        }
     });
 
     xTaskCreatePinnedToCore(

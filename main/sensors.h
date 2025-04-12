@@ -41,6 +41,7 @@ struct Data
     long time; // time in ms
 
     // float pressure;    // pressure in mbar
+    float sea_level_pressure = SEA_LEVEL_PRESSURE;
     float temperature; // Temperature in Celsius
     float raw_altitude;
     float estimated_altitude; // Filtered height
@@ -158,7 +159,7 @@ void update_sensors()
     gx = gx * 0.96 + ax * 0.04;
     gz = gz * 0.96 + az * 0.04;
 
-    float raw_height = bmp.readAltitude(SEA_LEVEL_PRESSURE);
+    float raw_height = bmp.readAltitude(datapoint.sea_level_pressure);
     float raw_velocity = a.acceleration.y;
     float raw_velocity_ms2 = raw_velocity * G; // convert to m/s2
 

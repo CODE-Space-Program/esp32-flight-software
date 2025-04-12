@@ -89,6 +89,7 @@ public:
         logEntry["nominalPitchServoDegrees"] = data.nominalPitchServoDegrees;
         logEntry["nominalYawServoDegrees"] = data.nominalYawServoDegrees;
         logEntry["servosLocked"] = data.servosLocked;
+        logEntry["seaLevelPressure"] = data.sea_level_pressure;
 
         telemetryBuffer.push_back(logEntry);
         checkAndSendTelemetry();
