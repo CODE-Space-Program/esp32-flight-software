@@ -27,10 +27,6 @@ void Tvc::moveRaw(float pitch, float yaw) {
     this->pitch = pitch;
     this->yaw = yaw;
 
-    if (servosLocked) {
-        Serial.println("WARNING Tvc.moveRaw called while servos are locked, ignoring");
-        return;
-    }
     servos.move(pitchServoChannel, pitch);
     servos.move(yawServoChannel, yaw);
 }

@@ -87,7 +87,8 @@ void setup()
             Serial.println("Received start command");
 
             tvc.initialize();
-            
+
+            ascendingMotorIgnite();            
             STATE = State::Flight;
         }
         if (command == "test_tvc")
@@ -201,7 +202,6 @@ void loop()
     case State::Flight:
         // flight mode, control the TVC
         tvc.move(pitch, yaw);
-        ascendingMotorIgnite();
         // Serial.println("Rocket in flight, pitch & yaw are:");
         // Serial.println(pitch);
         // Serial.println(yaw);
@@ -219,7 +219,7 @@ void loop()
         fireLandingBurn();
         STATE = State::Landed;
 
-        /*if (datapoint.estimated_altitude > 200) 
+        if (datapoint.estimated_altitude < 2) 
         {
             Serial.println("eagle has landed!");
             STATE = State::Landed;
@@ -227,6 +227,7 @@ void loop()
         break;
 
     case State::Landed:
+        tvc.move(pitch, yaw);
         // final logging
         Serial.println("Flight complete. Rocket landed successfully. ");
         break;
