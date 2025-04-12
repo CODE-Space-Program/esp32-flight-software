@@ -37,9 +37,9 @@ private:
     Servos servos;
 
     // PID constants
-    float Kp = 1.4;
-    float Ki = 0.2; // for the V1 TVC 0.4 for the Ki works good
-    float Kd = 0.01;
+    float Kp = 1;
+    float Ki = 0.9; // for the V1 TVC 0.4 for the Ki works good
+    float Kd = 0.10;
 
     float prevErrorPitch = 0, prevErrorYaw = 0;
     float integralPitch = 0, integralYaw = 0;

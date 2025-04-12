@@ -10,7 +10,7 @@
 #include <vector>
 #include <functional>
 
-#define ASCENDING_MOTOR_IGNITION_PIN 5 // inverted
+#define ASCENDING_MOTOR_IGNITION_PIN 5
 #define DESCENDING_MOTOR_IGNITION_PIN 33
 
 
@@ -27,7 +27,7 @@ extern float estimated_velocity;
 float estimated_height = 0;
 float estimated_velocity = 0;
 // constants
-extern const float SEA_LEVEL_PRESSURE = 1016.18; // example for sea level pressure in Berlin
+extern const float SEA_LEVEL_PRESSURE = 1012.17; // example for sea level pressure in Berlin
 extern const float AMBIENT_TEMPERATURE = 22.4;  // To be changed on the day
 const float G = 9.81;                           // gravity constant
 unsigned long lastUpdateTime = 0;
@@ -138,7 +138,7 @@ void update_sensors()
 
     accX = a.acceleration.x - 0.41;
     accY = a.acceleration.y + 0.14; // calibration values based on inherent innacuracies in BPM sensor
-    accZ = a.acceleration.z + 0.72;
+    accZ = a.acceleration.z + 0.12;
 
     gyrX = g.gyro.x;
     gyrY = g.gyro.y;
@@ -158,11 +158,13 @@ void update_sensors()
     gx = gx * 0.96 + ax * 0.04;
     gz = gz * 0.96 + az * 0.04;
 
+    gz = gz - 1.7;
+
     float raw_height = bmp.readAltitude(SEA_LEVEL_PRESSURE);
     float raw_velocity = a.acceleration.y;
     float raw_velocity_ms2 = raw_velocity * G; // convert to m/s2
 
-    float height = (heightKalmanFilter.updateEstimate(raw_height -46)); // code 1st floor height for testing
+    float height = (heightKalmanFilter.updateEstimate(raw_height)); // code 1st floor height for testing
     float estimated_velocity = velocityKalmanFilter.updateEstimate(raw_velocity_ms2);
 
     datapoint.raw_altitude = raw_height;
