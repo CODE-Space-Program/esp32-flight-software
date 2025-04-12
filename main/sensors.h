@@ -10,8 +10,8 @@
 #include <vector>
 #include <functional>
 
-#define ASCENDING_MOTOR_IGNITION_PIN 33 // inverted
-#define DESCENDING_MOTOR_IGNITION_PIN 5
+#define ASCENDING_MOTOR_IGNITION_PIN 5 // inverted
+#define DESCENDING_MOTOR_IGNITION_PIN 33
 
 
 // Wifi connection variables
