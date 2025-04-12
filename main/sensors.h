@@ -10,8 +10,8 @@
 #include <vector>
 #include <functional>
 
-#define ASCENDING_MOTOR_IGNITION_PIN 5
-#define DESCENDING_MOTOR_IGNITION_PIN 33
+#define ASCENDING_MOTOR_IGNITION_PIN 33 // inverted
+#define DESCENDING_MOTOR_IGNITION_PIN 5
 
 
 // Wifi connection variables
@@ -27,10 +27,11 @@ extern float estimated_velocity;
 float estimated_height = 0;
 float estimated_velocity = 0;
 // constants
-extern const float SEA_LEVEL_PRESSURE = 1024.63; // example for sea level pressure in Berlin
+extern const float SEA_LEVEL_PRESSURE = 1016.18; // example for sea level pressure in Berlin
 extern const float AMBIENT_TEMPERATURE = 22.4;  // To be changed on the day
 const float G = 9.81;                           // gravity constant
 unsigned long lastUpdateTime = 0;
+bool landingMotorIgnited = false;
 
 // Data Structure for a single datapoint
 struct Data
@@ -161,7 +162,7 @@ void update_sensors()
     float raw_velocity = a.acceleration.y;
     float raw_velocity_ms2 = raw_velocity * G; // convert to m/s2
 
-    float height = (heightKalmanFilter.updateEstimate(raw_height -38)); // code 1st floor height for testing
+    float height = (heightKalmanFilter.updateEstimate(raw_height -46)); // code 1st floor height for testing
     float estimated_velocity = velocityKalmanFilter.updateEstimate(raw_velocity_ms2);
 
     datapoint.raw_altitude = raw_height;
@@ -276,8 +277,6 @@ void descendingMotorIgnite()
 void fireLandingBurn() {
 
     float fireLandingMotorAlt = 0.6 * datapoint.apogee;
-    bool landingMotorIgnited = false;
-
 
     if (datapoint.estimated_altitude <= fireLandingMotorAlt && !landingMotorIgnited) {
         descendingMotorIgnite();
