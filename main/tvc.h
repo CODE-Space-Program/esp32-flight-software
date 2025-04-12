@@ -1,6 +1,7 @@
 #pragma once
 
 #include "servos.h"
+#include "sensors.h"
 
 /**
  * @brief Thrust Vector Control (TVC) class.
