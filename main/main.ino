@@ -131,6 +131,9 @@ void setup()
             datapoint.kp = args["kp"] | 1;
             datapoint.ki = args["ki"] | 0.9;
             datapoint.kd = args["kd"] | 0.10;
+            datapoint.pitch_inverted = args["pitchInverted"] | false;
+            datapoint.yaw_inverted = args["yawInverted"] | false;
+            datapoint.pitch_and_yaw_swiched = args["pitchAndYawSwitched"] | false;
         }
     });
 
