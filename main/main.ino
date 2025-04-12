@@ -127,9 +127,10 @@ void setup()
             serializeJsonPretty(args, Serial);
             Serial.println();
 
-            float seaLevelPressure = args["seaLevelPressure"] | 1016.18;
-
-            datapoint.sea_level_pressure = seaLevelPressure;
+            datapoint.sea_level_pressure = args["seaLevelPressure"] | 1016.18;
+            datapoint.kp = args["kp"] | 1;
+            datapoint.ki = args["ki"] | 0.9;
+            datapoint.kd = args["kd"] | 0.10;
         }
     });
 

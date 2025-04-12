@@ -91,6 +91,13 @@ public:
         logEntry["servosLocked"] = data.servosLocked;
         logEntry["seaLevelPressure"] = data.sea_level_pressure;
 
+        logEntry["pitchInverted"] = data.pitch_inverted;
+        logEntry["yawInverted"] = data.yaw_inverted;
+        logEntry["pitchAndYawSwitched"] = data.pitch_and_yaw_swiched;
+        logEntry["kp"] = data.kp;
+        logEntry["ki"] = data.ki;
+        logEntry["kd"] = data.kd;
+
         telemetryBuffer.push_back(logEntry);
         checkAndSendTelemetry();
     }

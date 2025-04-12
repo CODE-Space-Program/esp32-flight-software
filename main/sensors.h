@@ -59,6 +59,15 @@ struct Data
 
     bool servosLocked = true;
 
+
+    bool pitch_inverted = false;
+    bool yaw_inverted = false;
+    bool pitch_and_yaw_swiched = false;
+
+    float kp = 1;
+    float ki = 0.9;
+    float kd = 0.10;
+
 } datapoint;
 
 /* Initialize sensor objects here */
