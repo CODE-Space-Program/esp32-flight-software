@@ -223,7 +223,7 @@ void loop()
         {
             Serial.println("eagle has landed!");
             STATE = State::Landed;
-        };*/
+        };
         break;
 
     case State::Landed:
