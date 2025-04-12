@@ -63,8 +63,8 @@ void Tvc::move(float pitch, float yaw) {
     controlSignalPitch = scaleControlSignal(controlSignalPitch, -25, 25);
     controlSignalYaw = scaleControlSignal(controlSignalYaw, -25, 25);
 
-    Serial.print("delta time ");
-    Serial.println(dt);
+    //Serial.print("delta time ");
+    //Serial.println(dt);
 
     // Serial.println("Control signal pitch and control signal yaw:");
     // Serial.println(controlSignalPitch);
