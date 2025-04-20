@@ -1,7 +1,7 @@
 #include "tvc.h"
 
-Tvc::Tvc(Servos servos, int pitchServoChannel, int yawServoChannel)
-    : servos(servos), pitchServoChannel(pitchServoChannel), yawServoChannel(yawServoChannel) {}
+Tvc::Tvc(Servos servos, int pitchServoChannel, int yawServoChannel, float servoReduction)
+    : servos(servos), pitchServoChannel(pitchServoChannel), yawServoChannel(yawServoChannel), servoReduction(servoReduction) {}
 
 void Tvc::initialize() {
     if (servosLocked) {
@@ -69,5 +69,9 @@ void Tvc::move(float pitch, float yaw) {
     // Serial.println("Control signal pitch and control signal yaw:");
     // Serial.println(controlSignalPitch);
     // Serial.println(controlSignalYaw);
+
+    controlSignalPitch *= servoReduction;
+    controlSignalYaw *= servoReduction;
+
     moveRaw(controlSignalPitch + 90, controlSignalYaw + 90);
 }

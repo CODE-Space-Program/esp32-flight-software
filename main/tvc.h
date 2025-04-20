@@ -11,8 +11,9 @@ public:
     int yawServoChannel;
     float pitch;
     float yaw;
+    float servoReduction;
 
-    Tvc(Servos servos, int pitchServoChannel, int yawServoChannel);
+    Tvc(Servos servos, int pitchServoChannel, int yawServoChannel, float servoReduction);
 
     void initialize();
     void uninitialize();
