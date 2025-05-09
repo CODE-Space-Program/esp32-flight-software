@@ -41,6 +41,7 @@ struct Data
     long time; // time in ms
 
     // float pressure;    // pressure in mbar
+    float sea_level_pressure = SEA_LEVEL_PRESSURE;
     float temperature; // Temperature in Celsius
     float raw_altitude;
     float estimated_altitude; // Filtered height
@@ -57,6 +58,15 @@ struct Data
     float nominalPitchServoDegrees = 0;
 
     bool servosLocked = true;
+
+
+    bool pitch_inverted = false;
+    bool yaw_inverted = false;
+    bool pitch_and_yaw_swiched = false;
+
+    float kp = 1;
+    float ki = 0.9;
+    float kd = 0.10;
 
 } datapoint;
 
@@ -160,7 +170,7 @@ void update_sensors()
 
     gz = gz - 1.7;
 
-    float raw_height = bmp.readAltitude(SEA_LEVEL_PRESSURE);
+    float raw_height = bmp.readAltitude(datapoint.sea_level_pressure);
     float raw_velocity = a.acceleration.y;
     float raw_velocity_ms2 = raw_velocity * G; // convert to m/s2
 

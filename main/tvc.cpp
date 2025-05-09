@@ -41,23 +41,29 @@ float scaleControlSignal(float controlSignal, float minOutput, float maxOutput) 
 
 void Tvc::move(float pitch, float yaw) {
 
+    float actualPitch = datapoint.pitch_inverted ? -pitch : pitch;
+    float actualYaw = datapoint.yaw_inverted ? -yaw : yaw;
+
+    float finalPitch = datapoint.pitch_and_yaw_swiched ? actualYaw : actualPitch;
+    float finalYaw = datapoint.pitch_and_yaw_swiched ? actualPitch : actualYaw;
+
     static unsigned long lastTime = micros(); // Initialize lastTime with the current time
     unsigned long currentTime = micros();
     float dt = (currentTime - lastTime) / 1000000.0; // Convert microseconds to seconds
     lastTime = currentTime;
 
-    float errorPitch = -pitch;
+    float errorPitch = -finalPitch;
     integralPitch += errorPitch * dt;
     integralPitch = constrain(integralPitch, -10, 10);
     float derivativePitch = (errorPitch - prevErrorPitch) / dt;
-    float controlSignalPitch = Kp * errorPitch + Ki * integralPitch + Kd * derivativePitch;
+    float controlSignalPitch = datapoint.kp * errorPitch + datapoint.ki * integralPitch + datapoint.kd * derivativePitch;
     prevErrorPitch = errorPitch;
 
-    float errorYaw = -yaw;
+    float errorYaw = -finalYaw;
     integralYaw += errorYaw * dt;
     integralYaw = constrain(integralYaw, -10, 10);
     float derivativeYaw = (errorYaw - prevErrorYaw) / dt ;
-    float controlSignalYaw = Kp * errorYaw + Ki * integralYaw + Kd * derivativeYaw;
+    float controlSignalYaw = datapoint.kp * errorYaw + datapoint.ki * integralYaw + datapoint.kd * derivativeYaw;
     prevErrorYaw = errorYaw;
 
     controlSignalPitch = scaleControlSignal(controlSignalPitch, -25, 25);
